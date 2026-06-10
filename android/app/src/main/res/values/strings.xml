@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RingVault</string>
+    <string name="tab_ringtones">Ringtones</string>
+    <string name="tab_notifications">Notifications</string>
+    <string name="tab_alarms">Alarms</string>
+    <string name="chip_new">New 🔥</string>
+    <string name="chip_popular">Popular</string>
+    <string name="action_set_ringtone">Set as Ringtone</string>
+    <string name="action_set_notification">Set as Notification</string>
+    <string name="action_set_alarm">Set as Alarm</string>
+    <string name="action_save">Save to device</string>
+    <string name="msg_set_success">Done! Sound applied ✓</string>
+    <string name="msg_saved">Saved to %1$s folder</string>
+    <string name="msg_saved_manual">Saved. Permission missing — set it manually in sound settings.</string>
+    <string name="msg_error">Something went wrong. Try again.</string>
+    <string name="msg_permission_needed">RingVault needs permission to change system sounds</string>
+    <string name="open_settings">Open settings</string>
+    <string name="license_by">By %1$s · %2$s</string>
+    <string name="empty_list">No sounds found</string>
+    <string name="retry">Retry</string>
+    <string name="loading">Loading…</string>
+    <string name="offline_catalog">Offline — showing built-in catalog</string>
+    <string name="duration_seconds">%1$d sec</string>
+    <string name="cd_play">Play preview</string>
+    <string name="cd_stop">Stop preview</string>
+    <string name="cd_download">Download</string>
+</resources>

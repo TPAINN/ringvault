@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: ringvault-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: FREESOUND_API_KEY
+        sync: false
+      - key: PIXABAY_API_KEY
+        sync: false
+
+  - type: cron
+    name: ringvault-weekly-ingest
+    runtime: node
+    rootDir: backend
+    schedule: "0 4 * * 0"
+    buildCommand: npm install
+    startCommand: node cron/weekly.js
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: FREESOUND_API_KEY
+        sync: false
+      - key: PIXABAY_API_KEY
+        sync: false
