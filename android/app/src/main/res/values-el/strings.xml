@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">RingVault</string>
+    <string name="tab_ringtones">Ήχοι κλήσης</string>
+    <string name="tab_notifications">Ειδοποιήσεις</string>
+    <string name="tab_alarms">Ξυπνητήρια</string>
+    <string name="chip_new">Νέα 🔥</string>
+    <string name="chip_popular">Δημοφιλή</string>
+    <string name="action_set_ringtone">Ορισμός ως ήχος κλήσης</string>
+    <string name="action_set_notification">Ορισμός ως ειδοποίηση</string>
+    <string name="action_set_alarm">Ορισμός ως ξυπνητήρι</string>
+    <string name="action_save">Αποθήκευση στη συσκευή</string>
+    <string name="msg_set_success">Έτοιμο! Ο ήχος ορίστηκε ✓</string>
+    <string name="msg_saved">Αποθηκεύτηκε στον φάκελο %1$s</string>
+    <string name="msg_saved_manual">Αποθηκεύτηκε. Λείπει άδεια — όρισέ τον χειροκίνητα στις ρυθμίσεις ήχου.</string>
+    <string name="msg_error">Κάτι πήγε στραβά. Δοκίμασε ξανά.</string>
+    <string name="msg_permission_needed">Το RingVault χρειάζεται άδεια για αλλαγή ήχων συστήματος</string>
+    <string name="open_settings">Άνοιγμα ρυθμίσεων</string>
+    <string name="license_by">Από %1$s · %2$s</string>
+    <string name="empty_list">Δεν βρέθηκαν ήχοι</string>
+    <string name="retry">Δοκίμασε ξανά</string>
+    <string name="loading">Φόρτωση…</string>
+    <string name="offline_catalog">Εκτός σύνδεσης — εμφανίζεται ο ενσωματωμένος κατάλογος</string>
+    <string name="duration_seconds">%1$d δευτ.</string>
+    <string name="cd_play">Αναπαραγωγή</string>
+    <string name="cd_stop">Διακοπή</string>
+    <string name="cd_download">Λήψη</string>
+</resources>
