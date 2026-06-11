@@ -207,10 +207,12 @@ Release signing: keep `keystore.jks` + `keystore.properties` **out of git** (.gi
 
 ## 11. Current Status
 
-- [x] Repo scaffolded
-- [ ] Freesound API key obtained
-- [x] Backend MVP endpoints (sounds list/detail/search/download-count, syntax-checked; needs MONGO_URI + ingest run)
-- [x] Android project created (Compose, minSdk 26, Hilt, Media3) — code written, NOT yet compiled (no JDK/Android SDK on this machine; open in Android Studio)
+- [x] Repo scaffolded — GitHub: https://github.com/TPAINN/ringvault
+- [ ] Freesound API key obtained (Pixabay key also pending; Commons scraper works keyless — 49 sounds live)
+- [x] Backend MVP endpoints — LIVE at https://ringvault-api-0wbw.onrender.com (Render free, Frankfurt; MongoDB Atlas db `ringvault` on SmartGroceryHub cluster)
+- [x] Android project compiles — Gradle 9.0 / AGP 8.8 / Kotlin 2.1 / JDK 25 (Adoptium), debug + release BUILD SUCCESSFUL; APK on GitHub release v0.1.0
 - [x] Preview player implemented (PreviewPlayer.kt, single-instance ExoPlayer) — needs on-device verification
-- [ ] Set-as-ringtone flow working on physical device (RingtoneSetter.kt implemented, untested)
-- [x] Render cron configured in render.yaml (weekly ingest, Sun 04:00 UTC) — not yet deployed
+- [ ] Set-as-ringtone flow working on physical device (RingtoneSetter.kt implemented, untested on device)
+- [ ] Render cron NOT deployed (paid feature on Render free plan) — run `npm run ingest` manually weekly, or move cron to GitHub Actions
+- [x] Landing page LIVE at https://ringvault.vercel.app (Vercel, root dir `web/`)
+- Note: local dev `.env` uses non-SRV Mongo URI (local DNS blocks SRV lookups); Render uses the mongodb+srv form
