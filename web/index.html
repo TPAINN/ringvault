@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RingVault — Free Ringtones, Notifications & Alarms for Android</title>
+<meta name="description" content="RingVault is a free, lightweight Android app with curated CC0 ringtones, notification sounds and alarms. No ads, no tracking, open source.">
+<meta property="og:title" content="RingVault — Free Ringtones for Android">
+<meta property="og:description" content="Curated free ringtones, notification sounds & alarms. Open source, no ads.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1b1b2f;
+    --surface-2: #24243e;
+    --primary: #ffb74d;
+    --on-primary: #1b1b2f;
+    --text: #ececf1;
+    --muted: #9a9ab0;
+    --radius: 24px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  header { padding: 28px 0; }
+  nav { display: flex; justify-content: space-between; align-items: center; }
+  .logo { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.5px; }
+  .logo span { color: var(--primary); }
+  nav a.gh {
+    color: var(--muted); text-decoration: none; font-size: 0.95rem;
+    border: 1px solid var(--surface-2); padding: 8px 18px; border-radius: 999px;
+    transition: all .2s;
+  }
+  nav a.gh:hover { color: var(--text); border-color: var(--primary); }
+  .hero { padding: 90px 0 70px; text-align: center; }
+  .hero h1 {
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    font-weight: 800; letter-spacing: -2px; line-height: 1.1;
+    margin-bottom: 22px;
+  }
+  .hero h1 em { font-style: normal; color: var(--primary); }
+  .hero p.sub {
+    color: var(--muted); font-size: 1.2rem; max-width: 620px; margin: 0 auto 40px;
+  }
+  .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-block; padding: 15px 34px; border-radius: 999px;
+    text-decoration: none; font-weight: 600; font-size: 1.05rem; transition: transform .15s;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn-primary { background: var(--primary); color: var(--on-primary); }
+  .btn-secondary { background: var(--surface-2); color: var(--text); }
+  .badge {
+    display: inline-block; background: var(--surface-2); color: var(--primary);
+    font-size: .85rem; padding: 6px 16px; border-radius: 999px; margin-bottom: 26px;
+    font-weight: 600; letter-spacing: .5px;
+  }
+  section.features { padding: 50px 0 80px; }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .card {
+    background: var(--surface); border-radius: var(--radius); padding: 32px;
+    border: 1px solid var(--surface-2);
+  }
+  .card .icon { font-size: 2rem; margin-bottom: 14px; }
+  .card h3 { font-size: 1.15rem; margin-bottom: 8px; }
+  .card p { color: var(--muted); font-size: .98rem; }
+  section.how { padding: 30px 0 80px; }
+  section.how h2, section.features h2 {
+    text-align: center; font-size: 2rem; letter-spacing: -1px; margin-bottom: 44px;
+  }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+  .step { text-align: center; padding: 24px; }
+  .step .num {
+    width: 48px; height: 48px; border-radius: 50%; background: var(--primary);
+    color: var(--on-primary); font-weight: 800; font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+  }
+  .step p { color: var(--muted); font-size: .95rem; }
+  .step h4 { margin-bottom: 6px; }
+  footer {
+    border-top: 1px solid var(--surface-2); padding: 36px 0; text-align: center;
+    color: var(--muted); font-size: .9rem;
+  }
+  footer a { color: var(--primary); text-decoration: none; }
+</style>
+</head>
+<body>
+  <header class="container">
+    <nav>
+      <div class="logo">🔔 Ring<span>Vault</span></div>
+      <a class="gh" href="https://github.com/TPAINN/ringvault" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <div class="badge">FREE · OPEN SOURCE · NO ADS</div>
+      <h1>Your phone deserves<br>a <em>better ring</em>.</h1>
+      <p class="sub">
+        Curated free ringtones, notification sounds &amp; alarms for Android.
+        Preview instantly, set with one tap. Every sound is freely licensed — CC0, public domain or CC-BY.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/TPAINN/ringvault/releases" target="_blank" rel="noopener">⬇ Download APK</a>
+        <a class="btn btn-secondary" href="https://github.com/TPAINN/ringvault" target="_blank" rel="noopener">View source</a>
+      </div>
+    </section>
+
+    <section class="features container">
+      <h2>Why RingVault</h2>
+      <div class="grid">
+        <div class="card">
+          <div class="icon">🎵</div>
+          <h3>Instant preview</h3>
+          <p>Stream any sound before you commit. One player, one sound at a time — no chaos.</p>
+        </div>
+        <div class="card">
+          <div class="icon">⚡</div>
+          <h3>One-tap setup</h3>
+          <p>Set any sound as your ringtone, notification or alarm directly from the app. No file manager gymnastics.</p>
+        </div>
+        <div class="card">
+          <div class="icon">📜</div>
+          <h3>Legally free</h3>
+          <p>Every sound carries a real license — CC0, public domain or CC-BY with attribution shown in-app.</p>
+        </div>
+        <div class="card">
+          <div class="icon">🪶</div>
+          <h3>Lightweight</h3>
+          <p>Native Kotlin + Jetpack Compose. Tiny APK, Material You dynamic colors, dark theme first.</p>
+        </div>
+        <div class="card">
+          <div class="icon">🔄</div>
+          <h3>Fresh weekly</h3>
+          <p>An automated pipeline ingests, filters and classifies new sounds every week.</p>
+        </div>
+        <div class="card">
+          <div class="icon">🛡️</div>
+          <h3>No tracking</h3>
+          <p>No analytics SDKs, no ads, no account. Your phone, your sounds.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="how container">
+      <h2>How it works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <h4>Browse</h4>
+          <p>Ringtones, notifications and alarms in clean tabs — sorted by new or popular.</p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <h4>Preview</h4>
+          <p>Tap play to stream the sound instantly.</p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <h4>Set</h4>
+          <p>One tap saves it and applies it as your default sound.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      RingVault · Built with Kotlin, Jetpack Compose, Node.js &amp; MongoDB ·
+      <a href="https://github.com/TPAINN/ringvault" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </footer>
+</body>
+</html>
