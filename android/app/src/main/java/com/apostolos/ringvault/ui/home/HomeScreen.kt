@@ -21,10 +21,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,9 +34,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.apostolos.ringvault.R
@@ -48,6 +51,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsState()
     val event by viewModel.events.collectAsState()
     val nowPlayingId by viewModel.previewPlayer.nowPlayingId.collectAsState()
+    val playProgress by viewModel.previewPlayer.progress.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
 
@@ -76,8 +80,20 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
         if (event != null) viewModel.consumeEvent()
     }
 
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
-        topBar = { TopAppBar(title = { Text(stringResource(R.string.app_name)) }) },
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            LargeTopAppBar(
+                title = {
+                    Text(
+                        stringResource(R.string.app_name),
+                        fontWeight = FontWeight.Bold,
+                    )
+                },
+                scrollBehavior = scrollBehavior,
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
@@ -173,6 +189,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                                 SoundCard(
                                     sound = sound,
                                     isPlaying = nowPlayingId == sound.id,
+                                    progress = if (nowPlayingId == sound.id) playProgress else 0f,
                                     onTogglePlay = { viewModel.togglePreview(sound) },
                                     onDownload = { viewModel.saveToDevice(sound) },
                                     onClick = { viewModel.openDetail(sound) },

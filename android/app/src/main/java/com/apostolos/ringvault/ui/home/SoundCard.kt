@@ -6,6 +6,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,6 +46,7 @@ import com.apostolos.ringvault.ui.theme.RingVaultTheme
 fun SoundCard(
     sound: Sound,
     isPlaying: Boolean,
+    progress: Float,
     onTogglePlay: () -> Unit,
     onDownload: () -> Unit,
     onClick: () -> Unit,
@@ -69,28 +73,44 @@ fun SoundCard(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             val playScale by animateFloatAsState(
-                targetValue = if (isPlaying) 1.12f else 1f,
+                targetValue = if (isPlaying) 1.08f else 1f,
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioMediumBouncy,
                     stiffness = Spring.StiffnessMedium,
                 ),
                 label = "playScale",
             )
-            FilledIconButton(
-                onClick = onTogglePlay,
-                modifier = Modifier
-                    .size(48.dp)
-                    .scale(playScale),
-                colors = IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                ),
+            Box(
+                modifier = Modifier.size(56.dp),
+                contentAlignment = Alignment.Center,
             ) {
-                Icon(
-                    imageVector = if (isPlaying) Icons.Filled.Stop else Icons.Filled.PlayArrow,
-                    contentDescription = stringResource(
-                        if (isPlaying) R.string.cd_stop else R.string.cd_play
+                if (isPlaying) {
+                    // Playback progress ring driven by the preview player
+                    CircularProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier.size(56.dp),
+                        strokeWidth = 3.dp,
+                        strokeCap = StrokeCap.Round,
+                        color = MaterialTheme.colorScheme.primary,
+                        trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                    )
+                }
+                FilledIconButton(
+                    onClick = onTogglePlay,
+                    modifier = Modifier
+                        .size(46.dp)
+                        .scale(playScale),
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
                     ),
-                )
+                ) {
+                    Icon(
+                        imageVector = if (isPlaying) Icons.Filled.Stop else Icons.Filled.PlayArrow,
+                        contentDescription = stringResource(
+                            if (isPlaying) R.string.cd_stop else R.string.cd_play
+                        ),
+                    )
+                }
             }
 
             Spacer(Modifier.width(14.dp))
@@ -155,6 +175,7 @@ private fun SoundCardPreview() {
                 downloadUrl = "",
             ),
             isPlaying = false,
+            progress = 0f,
             onTogglePlay = {},
             onDownload = {},
             onClick = {},
