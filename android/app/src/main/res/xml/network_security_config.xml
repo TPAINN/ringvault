@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- HTTPS everywhere, except ccmixter.org: their cert chain includes an
+         expired intermediate that Android rejects, so CC audio streams over
+         plain HTTP for that single domain. -->
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">ccmixter.org</domain>
+    </domain-config>
+</network-security-config>
