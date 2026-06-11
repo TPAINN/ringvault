@@ -8,6 +8,7 @@
 <meta property="og:title" content="RingVault — Free Ringtones for Android">
 <meta property="og:description" content="Curated free ringtones, notification sounds & alarms. Open source, no ads.">
 <meta property="og:type" content="website">
+<meta name="theme-color" content="#0f0f1a">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
 <style>
   :root {
@@ -21,6 +22,7 @@
     --radius: 24px;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
     background: var(--bg);
     color: var(--text);
@@ -92,6 +94,54 @@
     color: var(--muted); font-size: .9rem;
   }
   footer a { color: var(--primary); text-decoration: none; }
+
+  /* Scroll-reveal */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+  }
+
+  /* Phone mockup */
+  .phone-wrap { display: flex; justify-content: center; padding: 10px 0 30px; }
+  .phone {
+    width: 290px; border-radius: 38px; background: var(--surface);
+    border: 6px solid var(--surface-2); padding: 22px 14px 26px;
+    box-shadow: 0 30px 80px rgba(0,0,0,.5);
+  }
+  .phone .statusbar { display: flex; justify-content: space-between; color: var(--muted); font-size: .7rem; padding: 0 8px 12px; }
+  .phone .app-title { font-weight: 700; padding: 0 8px 10px; }
+  .phone .tabs { display: flex; gap: 6px; padding: 0 8px 12px; font-size: .68rem; }
+  .phone .tabs span { padding: 5px 10px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+  .phone .tabs span.on { background: var(--primary); color: var(--on-primary); font-weight: 700; }
+  .m-card {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface-2); border-radius: 18px; padding: 12px; margin: 0 4px 10px;
+  }
+  .m-card .pl {
+    width: 36px; height: 36px; border-radius: 50%; background: var(--primary);
+    color: var(--on-primary); display: flex; align-items: center; justify-content: center;
+    font-size: .8rem; flex-shrink: 0;
+  }
+  .m-card.playing { background: #3a2f1e; }
+  .m-card .t { font-size: .78rem; font-weight: 600; }
+  .m-card .d { font-size: .62rem; color: var(--muted); }
+  .m-card .eq { margin-left: auto; display: flex; gap: 2px; align-items: flex-end; height: 16px; }
+  .m-card .eq i { width: 3px; background: var(--primary); border-radius: 2px; animation: eq 1s ease-in-out infinite; }
+  .m-card .eq i:nth-child(1) { height: 60%; animation-delay: 0s; }
+  .m-card .eq i:nth-child(2) { height: 100%; animation-delay: .2s; }
+  .m-card .eq i:nth-child(3) { height: 40%; animation-delay: .4s; }
+  @keyframes eq { 0%,100% { transform: scaleY(.5); } 50% { transform: scaleY(1); } }
+  @media (prefers-reduced-motion: reduce) { .m-card .eq i { animation: none; } }
+
+  @media (max-width: 560px) {
+    .hero { padding: 56px 0 48px; }
+    .hero p.sub { font-size: 1.05rem; }
+    .btn { padding: 13px 26px; font-size: 1rem; width: 100%; max-width: 320px; text-align: center; }
+    .card { padding: 24px; }
+    section.features, section.how { padding-bottom: 50px; }
+  }
 </style>
 </head>
 <body>
@@ -116,7 +166,34 @@
       </div>
     </section>
 
-    <section class="features container">
+    <section class="container reveal">
+      <div class="phone-wrap">
+        <div class="phone" aria-hidden="true">
+          <div class="statusbar"><span>22:30</span><span>📶 🔋</span></div>
+          <div class="app-title">🔔 RingVault</div>
+          <div class="tabs"><span class="on">Ringtones</span><span>Notifications</span><span>Alarms</span></div>
+          <div class="m-card playing">
+            <div class="pl">⏸</div>
+            <div><div class="t">Morning Birds Chime</div><div class="d">22 sec · calm</div></div>
+            <div class="eq"><i></i><i></i><i></i></div>
+          </div>
+          <div class="m-card">
+            <div class="pl">▶</div>
+            <div><div class="t">Soft Bell Tone</div><div class="d">8 sec · bell</div></div>
+          </div>
+          <div class="m-card">
+            <div class="pl">▶</div>
+            <div><div class="t">Gentle Marimba</div><div class="d">15 sec · melody</div></div>
+          </div>
+          <div class="m-card">
+            <div class="pl">▶</div>
+            <div><div class="t">Classic Doorbell</div><div class="d">3 sec · ding</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features container reveal">
       <h2>Why RingVault</h2>
       <div class="grid">
         <div class="card">
@@ -152,7 +229,7 @@
       </div>
     </section>
 
-    <section class="how container">
+    <section class="how container reveal">
       <h2>How it works</h2>
       <div class="steps">
         <div class="step">
@@ -180,5 +257,12 @@
       <a href="https://github.com/TPAINN/ringvault" target="_blank" rel="noopener">GitHub</a>
     </div>
   </footer>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+</script>
 </body>
 </html>

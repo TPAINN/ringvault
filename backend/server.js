@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
+const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 
 const soundsRouter = require('./routes/sounds');
@@ -13,7 +14,16 @@ const PORT = process.env.PORT || 5000;
 app.set('trust proxy', 1); // Render sits behind a proxy
 
 app.use(helmet());
+app.use(compression());
 app.use(express.json({ limit: '10kb' }));
+
+// Catalog changes weekly — let clients and Render's edge cache reads briefly
+app.use((req, res, next) => {
+  if (req.method === 'GET' && req.path.startsWith('/api/')) {
+    res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600');
+  }
+  next();
+});
 
 const origins = (process.env.CORS_ORIGINS || '')
   .split(',')
