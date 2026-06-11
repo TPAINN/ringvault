@@ -21,7 +21,7 @@ android {
         buildConfigField(
             "String",
             "API_BASE_URL",
-            "\"${project.findProperty("RINGVAULT_API_URL") ?: "https://ringvault-api.onrender.com"}\""
+            "\"${project.findProperty("RINGVAULT_API_URL") ?: "https://ringvault-api-0wbw.onrender.com"}\""
         )
     }
 

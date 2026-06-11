@@ -1,6 +1,16 @@
-# RingVault
+# RingVault 🔔
 
 Android app για Ringtones, Notifications & Alarms — Kotlin/Compose client + Node/Express/MongoDB backend.
+
+[![Landing](https://img.shields.io/badge/landing-ringvault.vercel.app-orange)](https://ringvault.vercel.app)
+[![API](https://img.shields.io/badge/API-onrender.com-46b3e6)](https://ringvault-api-0wbw.onrender.com/health)
+[![APK](https://img.shields.io/github/v/release/TPAINN/ringvault?label=APK)](https://github.com/TPAINN/ringvault/releases)
+
+| | |
+|---|---|
+| 🌐 Landing page | https://ringvault.vercel.app |
+| ⚙️ Live API | https://ringvault-api-0wbw.onrender.com/api/sounds |
+| 📱 APK | [Releases](https://github.com/TPAINN/ringvault/releases) |
 
 Δες το [CLAUDE.md](CLAUDE.md) για πλήρες context (αρχιτεκτονική, νομικοί περιορισμοί πηγών, phased plan).
 
@@ -36,7 +46,7 @@ cd android
 ./gradlew assembleRelease     # signed APK (θέλει keystore — δες CLAUDE.md §8)
 ```
 
-Backend URL: default `https://ringvault-api.onrender.com`. Override σε `~/.gradle/gradle.properties` ή `android/gradle.properties`:
+Backend URL: default `https://ringvault-api-0wbw.onrender.com` (live). Override σε `~/.gradle/gradle.properties` ή `android/gradle.properties`:
 
 ```
 RINGVAULT_API_URL=http://10.0.2.2:5000
