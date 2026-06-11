@@ -212,7 +212,10 @@ Release signing: keep `keystore.jks` + `keystore.properties` **out of git** (.gi
 ## 11. Current Status
 
 - [x] Repo scaffolded — GitHub: https://github.com/TPAINN/ringvault
-- [ ] Freesound API key obtained (Pixabay key also pending; Mixkit + Commons run keyless — 216 sounds live, clean titles via lib/titleClean.js)
+- [ ] Freesound API key obtained (Pixabay key also pending). Keyless sources live: Mixkit (276 auto-discovered categories), ccMixter (CC-BY music/remixes, native HTTP — see scraper comment re X-JSON header + expired cert), Commons — **3348 sounds total**, clean titles via lib/titleClean.js
+- [x] Tag categories: GET /api/meta/tags (top-30 per category) + chips row in app (v0.4.0)
+- [x] Instant load: disk cache per tab on device + keep-warm.yml pings /health every 10 min (free on public repos)
+- ⚠️ Cache-Control middleware must NOT apply to 404/500 (edge caches misses — bit us once; fixed with no-store in handlers)
 - [x] Backend MVP endpoints — LIVE at https://ringvault-api-0wbw.onrender.com (Render free, Frankfurt; MongoDB Atlas db `ringvault` on SmartGroceryHub cluster)
 - [x] Android project compiles — Gradle 9.0 / AGP 8.8 / Kotlin 2.1 / JDK 25 (Adoptium); release-signed APK (1.7 MB, R8) on GitHub release v0.2.0
 - [x] Release signing: `android/keystore.jks` + `android/keystore.properties` (both gitignored). KEYSTORE PASSWORD IS ONLY IN keystore.properties — back it up in a password manager; losing it = losing update capability
