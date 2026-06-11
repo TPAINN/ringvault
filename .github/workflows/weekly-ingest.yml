@@ -1,0 +1,42 @@
+name: Weekly catalog ingest
+
+on:
+  schedule:
+    # Sundays 04:00 UTC (per CLAUDE.md §5)
+    - cron: "0 4 * * 0"
+  workflow_dispatch: {}
+
+concurrency:
+  group: weekly-ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Ingest new sounds
+        run: node pipeline/ingest.js
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+
+      - name: Health-check existing URLs
+        run: node pipeline/healthcheck.js
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}

@@ -1,15 +1,18 @@
 package com.apostolos.ringvault.ui.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -30,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -139,26 +143,31 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                         )
                     }
                     else -> {
-                        val listState = rememberLazyListState()
+                        // Adaptive grid: 1 column on phones, 2+ on tablets/landscape
+                        val gridState = rememberLazyGridState()
 
                         val shouldLoadMore by remember {
                             derivedStateOf {
                                 val lastVisible =
-                                    listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-                                lastVisible >= listState.layoutInfo.totalItemsCount - 5
+                                    gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                                lastVisible >= gridState.layoutInfo.totalItemsCount - 5
                             }
                         }
                         LaunchedEffect(shouldLoadMore) {
                             if (shouldLoadMore) viewModel.loadMore()
                         }
 
-                        LazyColumn(
-                            state = listState,
-                            contentPadding = androidx.compose.foundation.layout.PaddingValues(
-                                horizontal = 16.dp,
-                                vertical = 8.dp,
+                        LazyVerticalGrid(
+                            columns = GridCells.Adaptive(minSize = 340.dp),
+                            state = gridState,
+                            contentPadding = PaddingValues(
+                                start = 16.dp,
+                                end = 16.dp,
+                                top = 8.dp,
+                                bottom = 24.dp,
                             ),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             items(state.sounds, key = { it.id }) { sound ->
                                 SoundCard(
@@ -167,6 +176,7 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                                     onTogglePlay = { viewModel.togglePreview(sound) },
                                     onDownload = { viewModel.saveToDevice(sound) },
                                     onClick = { viewModel.openDetail(sound) },
+                                    modifier = Modifier.animateItem(),
                                 )
                             }
                         }
@@ -174,7 +184,16 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                 }
 
                 if (state.isWorking) {
-                    CircularProgressIndicator(Modifier.align(Alignment.Center))
+                    // Scrim blocks interaction while a download is in flight
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.35f))
+                            .pointerInput(Unit) {},
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
             }
         }
