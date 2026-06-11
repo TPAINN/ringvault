@@ -75,11 +75,16 @@ app.get('/api/meta/tags', async (req, res, next) => {
   }
 });
 
-app.use((req, res) => res.status(404).json({ error: 'Not found' }));
+// Never let the edge cache misses — a 404 cached for 5 min hides fresh routes
+app.use((req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.status(404).json({ error: 'Not found' });
+});
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error(err);
+  res.set('Cache-Control', 'no-store');
   res.status(500).json({ error: 'Internal server error' });
 });
 
