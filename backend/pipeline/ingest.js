@@ -5,6 +5,7 @@ const { classify } = require('./classify');
 
 // Per-source isolation: one failing scraper never kills the pipeline.
 const SOURCES = {
+  commons: require('../scrapers/commons'),
   freesound: require('../scrapers/freesound'),
   pixabay: require('../scrapers/pixabay'),
 };
