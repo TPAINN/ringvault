@@ -55,8 +55,12 @@ Core loop:
 - **Pixabay Audio API** — royalty-free sound effects, simple JSON API.
 
 **Tier 2 — Scrape-friendly free libraries (check robots.txt + ToS first):**
-- Mixkit (free sound effects, explicit free license)
+- ✅ Mixkit — IMPLEMENTED (`scrapers/mixkit.js`). robots.txt verified 2026-06-11 (Allow: /), Mixkit Free License, 1.5s polite delay, data parsed from category-page data attributes
+- ✅ Wikimedia Commons — IMPLEMENTED (`scrapers/commons.js`), CC0/PD/CC-BY only
 - Notification Sounds–style CC sites
+
+⚠️ TikTok / trending commercial sounds: REJECTED — copyrighted content, real legal
+exposure for a distributed app (see warning above). Do not implement.
 
 **Tier 3 — User value-add:**
 - Curated/processed versions (normalize loudness to -14 LUFS, trim silence, fade-out) — done in the weekly pipeline with `ffmpeg`.
@@ -208,7 +212,7 @@ Release signing: keep `keystore.jks` + `keystore.properties` **out of git** (.gi
 ## 11. Current Status
 
 - [x] Repo scaffolded — GitHub: https://github.com/TPAINN/ringvault
-- [ ] Freesound API key obtained (Pixabay key also pending; Commons scraper works keyless — 49 sounds live)
+- [ ] Freesound API key obtained (Pixabay key also pending; Mixkit + Commons run keyless — 216 sounds live, clean titles via lib/titleClean.js)
 - [x] Backend MVP endpoints — LIVE at https://ringvault-api-0wbw.onrender.com (Render free, Frankfurt; MongoDB Atlas db `ringvault` on SmartGroceryHub cluster)
 - [x] Android project compiles — Gradle 9.0 / AGP 8.8 / Kotlin 2.1 / JDK 25 (Adoptium); release-signed APK (1.7 MB, R8) on GitHub release v0.2.0
 - [x] Release signing: `android/keystore.jks` + `android/keystore.properties` (both gitignored). KEYSTORE PASSWORD IS ONLY IN keystore.properties — back it up in a password manager; losing it = losing update capability
