@@ -2,9 +2,11 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const Sound = require('../models/Sound');
 const { classify } = require('./classify');
+const { cleanTitle } = require('../lib/titleClean');
 
 // Per-source isolation: one failing scraper never kills the pipeline.
 const SOURCES = {
+  mixkit: require('../scrapers/mixkit'),
   commons: require('../scrapers/commons'),
   freesound: require('../scrapers/freesound'),
   pixabay: require('../scrapers/pixabay'),
@@ -26,6 +28,14 @@ async function ingest({ since } = {}) {
     }
 
     for (const item of items) {
+      // Human-presentable title or nothing — drives the whole card UI
+      const title = cleanTitle(item.title);
+      if (!title) {
+        summary.skipped += 1;
+        continue;
+      }
+      item.title = title;
+
       // Filter: duration limits per category (ringtone/notif ≤ 40s, alarm ≤ 60s)
       const category = classify(item);
       const maxDur = category === 'alarm' ? 60 : 40;

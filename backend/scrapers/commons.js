@@ -16,7 +16,9 @@ const QUERIES = [
 const OK_FORMATS = { ogg: 'ogg', oga: 'ogg', mp3: 'mp3', wav: 'wav' };
 const OK_LICENSES = /^(cc0|public domain|pd|cc[ -]by)/i;
 const SPEECH_OR_MUSIC =
-  /interview|speech|sermon|anthem|song|choir|band|orchestra|lecture|reading|poem|silent|empty|language|spoken|pronunciation|silent night|talk|vocal|conversation/i;
+  /interview|speech|sermon|anthem|song|choir|band|orchestra|lecture|reading|poem|silent|empty|language|spoken|pronunciation|silent night|talk|vocal|conversation|lingua|univ|rimshot|macleod/i;
+// Lingua Libre pronunciation recordings: "File:LL-Q123456 ..."
+const LINGUA_LIBRE = /^File:LL[ -]?Q?\d*/i;
 const CJK = /[　-鿿가-힯぀-ヿ]/;
 
 // Wikimedia Commons — keyless source. Only freely licensed audio (CC0/PD/CC-BY*).
@@ -62,6 +64,7 @@ async function fetchNew() {
 
       // Skip speech/music recordings that match the keyword but make bad ringtones
       if (SPEECH_OR_MUSIC.test(page.title)) continue;
+      if (LINGUA_LIBRE.test(page.title)) continue;
       if (CJK.test(page.title)) continue;
       // Language-prefixed pronunciation files, e.g. "De-Haustürklingel.ogg"
       if (/^File:[A-Z][a-z]{1,3}-/.test(page.title)) continue;
