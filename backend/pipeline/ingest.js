@@ -7,6 +7,7 @@ const { cleanTitle } = require('../lib/titleClean');
 // Per-source isolation: one failing scraper never kills the pipeline.
 const SOURCES = {
   mixkit: require('../scrapers/mixkit'),
+  ccmixter: require('../scrapers/ccmixter'),
   commons: require('../scrapers/commons'),
   freesound: require('../scrapers/freesound'),
   pixabay: require('../scrapers/pixabay'),
@@ -36,9 +37,12 @@ async function ingest({ since } = {}) {
       }
       item.title = title;
 
-      // Filter: duration limits per category (ringtone/notif ≤ 40s, alarm ≤ 60s)
-      const category = classify(item);
-      const maxDur = category === 'alarm' ? 60 : 40;
+      // Filter: duration limits per category (ringtone/notif ≤ 40s, alarm ≤ 60s).
+      // Exception: music tracks (ccMixter remixes) become ringtones up to 5 min —
+      // phones only play the first ~30s anyway.
+      const isMusic = (item.tags || []).includes('music');
+      const category = isMusic ? 'ringtone' : classify(item);
+      const maxDur = isMusic ? 300 : category === 'alarm' ? 60 : 40;
       if (!item.durationSec || item.durationSec > maxDur || item.durationSec < 1) {
         summary.skipped += 1;
         continue;

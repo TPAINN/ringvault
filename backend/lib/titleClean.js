@@ -3,6 +3,10 @@
 
 const REJECT = /unknown|untitled|unnamed|no title|test recording|^audio$|^sound$/i;
 
+// Words that describe the file, not the sound — noise in a card title
+const FILLER =
+  /\b(sound effects?|sound files?|audio files?|audio|recording|recorded|files?|misc|near mono|mono|stereo|sample|sfx|wav|mp3|ogg|version|edit)\b/gi;
+
 function cleanTitle(raw) {
   let t = String(raw || '')
     .replace(/\.(mp3|wav|ogg|oga|flac|opus|m4a|aiff?|mid)$/i, '')
@@ -17,6 +21,7 @@ function cleanTitle(raw) {
     .replace(/\bISRC\s*\S+/gi, ' ')
     // keep letters (any script), digits, spaces, apostrophes, hyphens
     .replace(/[^\p{L}\p{N}\s'’-]/gu, ' ')
+    .replace(FILLER, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 
@@ -25,6 +30,13 @@ function cleanTitle(raw) {
 
   // drop short gibberish tokens with internal capitals ("JjW") — keeps "MacLeod", "WWS"
   t = t.replace(/\b\p{Lu}\p{Ll}{0,2}\p{Lu}\b/gu, ' ').replace(/\s+/g, ' ').trim();
+
+  // drop dangling connector words left behind by the filler pass
+  t = t.replace(/\b(for|of|the|a|an|and)\s*$/i, '').trim();
+
+  // long titles read like file descriptions — keep the first 7 words
+  const words = t.split(' ');
+  if (words.length > 7) t = words.slice(0, 7).join(' ');
 
   // must be mostly letters and long enough to mean something
   const letters = (t.match(/\p{L}/gu) || []).length;

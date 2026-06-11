@@ -22,6 +22,8 @@ data class HomeUiState(
     val category: SoundCategory = SoundCategory.RINGTONE,
     val sort: SortMode = SortMode.NEW,
     val sounds: List<Sound> = emptyList(),
+    val tags: List<String> = emptyList(),
+    val selectedTag: String? = null,
     val isLoading: Boolean = false,
     val isOffline: Boolean = false,
     val page: Int = 1,
@@ -51,20 +53,46 @@ class HomeViewModel @Inject constructor(
     val events: StateFlow<HomeEvent?> = _events.asStateFlow()
 
     init {
+        // Instant first paint from disk cache; the network result replaces it
+        viewModelScope.launch {
+            val s = _uiState.value
+            val cached = repo.readCache(s.category, s.sort.apiValue)
+            if (cached != null && _uiState.value.sounds.isEmpty()) {
+                _uiState.value = _uiState.value.copy(sounds = cached.items)
+            }
+        }
         load(reset = true)
+        loadTags()
     }
 
     fun selectCategory(category: SoundCategory) {
         if (category == _uiState.value.category) return
         previewPlayer.stop()
-        _uiState.value = _uiState.value.copy(category = category)
+        _uiState.value = _uiState.value.copy(category = category, selectedTag = null)
         load(reset = true)
+        loadTags()
     }
 
     fun selectSort(sort: SortMode) {
         if (sort == _uiState.value.sort) return
         _uiState.value = _uiState.value.copy(sort = sort)
         load(reset = true)
+    }
+
+    fun selectTag(tag: String?) {
+        if (tag == _uiState.value.selectedTag) return
+        _uiState.value = _uiState.value.copy(selectedTag = tag)
+        load(reset = true)
+    }
+
+    private fun loadTags() {
+        val category = _uiState.value.category
+        viewModelScope.launch {
+            val tags = repo.getTags(category).map { it.tag }
+            if (_uiState.value.category == category) {
+                _uiState.value = _uiState.value.copy(tags = tags)
+            }
+        }
     }
 
     fun loadMore() {
@@ -76,10 +104,11 @@ class HomeViewModel @Inject constructor(
     private fun load(reset: Boolean) {
         val s = _uiState.value
         val page = if (reset) 1 else s.page + 1
-        _uiState.value = s.copy(isLoading = true, sounds = if (reset) emptyList() else s.sounds)
+        // keep showing current (possibly cached) items while refreshing — no blank flash
+        _uiState.value = s.copy(isLoading = true)
 
         viewModelScope.launch {
-            when (val result = repo.getSounds(s.category, s.sort.apiValue, page)) {
+            when (val result = repo.getSounds(s.category, s.sort.apiValue, page, s.selectedTag)) {
                 is CatalogResult.Online -> {
                     val existing = if (reset) emptyList() else _uiState.value.sounds
                     _uiState.value = _uiState.value.copy(

@@ -52,6 +52,29 @@ app.get('/api/meta/categories', (req, res) => {
   ]);
 });
 
+// Top tags across active sounds — drives the category chips in the app
+app.get('/api/meta/tags', async (req, res, next) => {
+  try {
+    const Sound = require('./models/Sound');
+    const filter = { active: true };
+    if (['ringtone', 'notification', 'alarm'].includes(req.query.category)) {
+      filter.category = req.query.category;
+    }
+    const tags = await Sound.aggregate([
+      { $match: filter },
+      { $unwind: '$tags' },
+      { $group: { _id: '$tags', count: { $sum: 1 } } },
+      { $match: { count: { $gte: 3 } } },
+      { $sort: { count: -1 } },
+      { $limit: 30 },
+      { $project: { _id: 0, tag: '$_id', count: 1 } },
+    ]);
+    res.json(tags);
+  } catch (err) {
+    next(err);
+  }
+});
+
 app.use((req, res) => res.status(404).json({ error: 'Not found' }));
 
 // eslint-disable-next-line no-unused-vars

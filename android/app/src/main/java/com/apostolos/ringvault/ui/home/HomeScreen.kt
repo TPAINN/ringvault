@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items as rowItems
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -135,6 +137,30 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
                     onClick = { viewModel.selectSort(SortMode.POPULAR) },
                     label = { Text(stringResource(R.string.chip_popular)) },
                 )
+            }
+
+            // Category/tag chips — scrollable, per main category
+            if (state.tags.isNotEmpty()) {
+                LazyRow(
+                    contentPadding = PaddingValues(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(bottom = 4.dp),
+                ) {
+                    item(key = "__all") {
+                        FilterChip(
+                            selected = state.selectedTag == null,
+                            onClick = { viewModel.selectTag(null) },
+                            label = { Text(stringResource(R.string.chip_all)) },
+                        )
+                    }
+                    rowItems(state.tags, key = { it }) { tag ->
+                        FilterChip(
+                            selected = state.selectedTag == tag,
+                            onClick = { viewModel.selectTag(tag) },
+                            label = { Text(tag.replaceFirstChar { it.uppercase() }) },
+                        )
+                    }
+                }
             }
 
             if (state.isOffline) {
