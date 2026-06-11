@@ -210,9 +210,12 @@ Release signing: keep `keystore.jks` + `keystore.properties` **out of git** (.gi
 - [x] Repo scaffolded — GitHub: https://github.com/TPAINN/ringvault
 - [ ] Freesound API key obtained (Pixabay key also pending; Commons scraper works keyless — 49 sounds live)
 - [x] Backend MVP endpoints — LIVE at https://ringvault-api-0wbw.onrender.com (Render free, Frankfurt; MongoDB Atlas db `ringvault` on SmartGroceryHub cluster)
-- [x] Android project compiles — Gradle 9.0 / AGP 8.8 / Kotlin 2.1 / JDK 25 (Adoptium), debug + release BUILD SUCCESSFUL; APK on GitHub release v0.1.0
+- [x] Android project compiles — Gradle 9.0 / AGP 8.8 / Kotlin 2.1 / JDK 25 (Adoptium); release-signed APK (1.7 MB, R8) on GitHub release v0.2.0
+- [x] Release signing: `android/keystore.jks` + `android/keystore.properties` (both gitignored). KEYSTORE PASSWORD IS ONLY IN keystore.properties — back it up in a password manager; losing it = losing update capability
+- [x] Adaptive UI: LazyVerticalGrid (1 col phones / multi-col tablets+landscape), spring animations, item placement animations, download scrim
 - [x] Preview player implemented (PreviewPlayer.kt, single-instance ExoPlayer) — needs on-device verification
 - [ ] Set-as-ringtone flow working on physical device (RingtoneSetter.kt implemented, untested on device)
-- [ ] Render cron NOT deployed (paid feature on Render free plan) — run `npm run ingest` manually weekly, or move cron to GitHub Actions
-- [x] Landing page LIVE at https://ringvault.vercel.app (Vercel, root dir `web/`)
-- Note: local dev `.env` uses non-SRV Mongo URI (local DNS blocks SRV lookups); Render uses the mongodb+srv form
+- [x] Weekly cron on GitHub Actions (.github/workflows/weekly-ingest.yml, Sun 04:00 UTC + manual dispatch). MONGO_URI repo secret set; add FREESOUND_API_KEY / PIXABAY_API_KEY secrets when obtained. Verified run: ingest + healthcheck green
+- [x] Backend: gzip + Cache-Control(300s) live on Render
+- [x] Landing page LIVE at https://ringvault.vercel.app (Vercel, root dir `web/`) — phone mockup, scroll reveal, responsive
+- Note: local dev `.env` uses non-SRV Mongo URI (local DNS blocks SRV lookups); Render/Actions use the mongodb+srv form
