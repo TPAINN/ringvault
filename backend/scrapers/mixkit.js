@@ -1,29 +1,32 @@
 const axios = require('axios');
 
 // Mixkit free sound effects — explicit free license, robots.txt allows crawling.
-// Audio metadata is embedded in the category pages as data attributes.
+// Categories are discovered from the index page, so new ones land automatically.
 const BASE = 'https://mixkit.co/free-sound-effects';
-const CATEGORIES = ['bell', 'notification', 'alarm', 'ringtone', 'chime', 'ding', 'whistle'];
-const MAX_PAGES = 3;
-const UA = 'RingVault/0.3 (catalog ingest; respects robots.txt)';
+const MAX_PAGES_PER_CATEGORY = 2;
+const POLITE_DELAY_MS = 1200;
+const UA = 'RingVault/0.4 (catalog ingest; respects robots.txt)';
 
 async function fetchNew() {
+  const categories = await discoverCategories();
+  console.log(`[mixkit] ${categories.length} categories discovered`);
+
   const seen = new Set();
   const results = [];
 
-  for (const category of CATEGORIES) {
-    for (let page = 1; page <= MAX_PAGES; page += 1) {
+  for (const category of categories) {
+    for (let page = 1; page <= MAX_PAGES_PER_CATEGORY; page += 1) {
       const url = page === 1 ? `${BASE}/${category}/` : `${BASE}/${category}/?page=${page}`;
       let html;
       try {
-        await new Promise((r) => setTimeout(r, 1500)); // be polite
+        await new Promise((r) => setTimeout(r, POLITE_DELAY_MS));
         ({ data: html } = await axios.get(url, {
           headers: { 'User-Agent': UA },
           timeout: 30000,
           validateStatus: (s) => s === 200,
         }));
       } catch {
-        break; // category or page doesn't exist — move on
+        break; // page doesn't exist — next category
       }
 
       const items = parsePage(html);
@@ -34,7 +37,7 @@ async function fetchNew() {
         seen.add(item.sourceId);
         results.push({
           ...item,
-          tags: [category],
+          tags: [category.replace(/-/g, ' ')],
           source: 'mixkit',
           format: 'mp3',
           bitrateKbps: 128,
@@ -46,6 +49,24 @@ async function fetchNew() {
     }
   }
   return results;
+}
+
+async function discoverCategories() {
+  try {
+    const { data: html } = await axios.get(`${BASE}/`, {
+      headers: { 'User-Agent': UA },
+      timeout: 30000,
+    });
+    const slugs = new Set();
+    const re = /href="\/free-sound-effects\/([a-z0-9-]+)\/"/g;
+    let m;
+    while ((m = re.exec(html)) !== null) slugs.add(m[1]);
+    return [...slugs];
+  } catch (err) {
+    console.error(`[mixkit] category discovery failed: ${err.message}`);
+    // fallback to a known-good core set
+    return ['bell', 'notification', 'alarm', 'ringtone', 'chimes', 'beep', 'click'];
+  }
 }
 
 // Each card carries an audio-player block (preview url + item id); the title and

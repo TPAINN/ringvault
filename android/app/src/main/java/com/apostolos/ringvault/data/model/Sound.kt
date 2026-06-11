@@ -33,3 +33,9 @@ data class SoundPage(
     val page: Int = 1,
     val pages: Int = 0,
 )
+
+@Serializable
+data class TagCount(
+    val tag: String,
+    val count: Int = 0,
+)

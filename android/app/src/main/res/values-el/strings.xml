@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">RingVault</string>
     <string name="tab_ringtones">Ήχοι κλήσης</string>
@@ -6,6 +6,7 @@
     <string name="tab_alarms">Ξυπνητήρια</string>
     <string name="chip_new">Νέα 🔥</string>
     <string name="chip_popular">Δημοφιλή</string>
+    <string name="chip_all">Όλα</string>
     <string name="action_set_ringtone">Ορισμός ως ήχος κλήσης</string>
     <string name="action_set_notification">Ορισμός ως ειδοποίηση</string>
     <string name="action_set_alarm">Ορισμός ως ξυπνητήρι</string>
