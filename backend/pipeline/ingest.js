@@ -37,12 +37,12 @@ async function ingest({ since } = {}) {
       }
       item.title = title;
 
-      // Filter: duration limits per category (ringtone/notif ≤ 40s, alarm ≤ 60s).
-      // Exception: music tracks (ccMixter remixes) become ringtones up to 5 min —
-      // phones only play the first ~30s anyway.
-      const isMusic = (item.tags || []).includes('music');
-      const category = isMusic ? 'ringtone' : classify(item);
-      const maxDur = isMusic ? 300 : category === 'alarm' ? 60 : 40;
+      // Filter: keep everything SHORT so every sound is actually usable as a
+      // ringtone/notification and plays fully in-app. No long-music exception —
+      // a 3-minute track is not a ringtone and was the source of "100s+ won't play".
+      // notification ≤ 8s, ringtone ≤ 30s, alarm ≤ 40s.
+      const category = classify(item);
+      const maxDur = category === 'alarm' ? 40 : category === 'notification' ? 8 : 30;
       if (!item.durationSec || item.durationSec > maxDur || item.durationSec < 1) {
         summary.skipped += 1;
         continue;
