@@ -117,6 +117,17 @@
   .mbtn-dl{background:var(--primary);color:var(--on-primary)}
   .mbtn-x{background:none;color:var(--muted);margin-left:auto}
   .fname{font-size:.8rem;color:var(--good);margin-bottom:10px;word-break:break-all}
+  .ai-in{width:100%;background:var(--bg);border:1px solid var(--surface-3);color:var(--text);padding:10px 12px;border-radius:10px;
+    font-size:.9rem;outline:none;margin-bottom:12px;font-family:inherit}
+  .ai-in:focus{border-color:var(--primary)}
+  textarea#aiPrompt{min-height:70px;resize:vertical}
+  .ai-status{font-size:.85rem;color:#ce93d8;margin-top:10px;min-height:1.2em}
+  .ai-status.err{color:#ef9a9a}
+  .ai-out{margin-top:14px;display:none;background:var(--bg);border:1px solid var(--surface-2);border-radius:12px;padding:14px}
+  .ai-out.show{display:block}
+  .ai-out audio{width:100%;margin-bottom:10px}
+  .ai-warn{font-size:.72rem;color:var(--muted);background:var(--bg);border:1px solid var(--surface-2);border-radius:8px;padding:9px 11px;line-height:1.5;margin-bottom:12px}
+  .ai-warn b{color:#ce93d8}
 
   @media(max-width:560px){
     .hbar{padding:12px 14px}
@@ -133,6 +144,7 @@
     <div class="logo">🔔 Ring<span>Vault</span></div>
     <div class="search"><input id="search" type="text" placeholder="Αναζήτηση ήχου..."></div>
     <button class="btn-own" id="installBtn" style="display:none;background:var(--surface-2);color:var(--primary)">⤓ Εγκατάσταση</button>
+    <button class="btn-own" id="openAI" style="background:linear-gradient(135deg,#ce93d8,#ffb74d);color:#1b1b2f">✨ AI ήχος</button>
     <button class="btn-own" id="openOwn">＋ Δικό σου ringtone</button>
   </div>
   <div class="tabs" id="tabs"></div>
@@ -199,6 +211,28 @@
         <button class="mbtn mbtn-x" id="closeOwn">Κλείσιμο</button>
       </div>
       <p class="hint" style="margin-top:12px;margin-bottom:0">Στο κινητό: άνοιξε το αρχείο → <strong>Set as ringtone</strong>, ή βάλ' το στον φάκελο Ringtones.</p>
+    </div>
+  </div>
+</div>
+
+<!-- AI generate -->
+<div class="modal" id="aiModal">
+  <div class="mbox">
+    <h2>✨ Φτιάξε ήχο με <span>AI</span></h2>
+    <p class="hint">Περίγραψε τον ήχο που θες — η AI (ElevenLabs) φτιάχνει έναν <strong>μοναδικό, royalty-free</strong> ήχο. Δικός σου τον κατεβάζεις & τον βάζεις ringtone.</p>
+    <div class="ai-warn"><b>Χρειάζεται δικό σου ElevenLabs API key.</b> Αποθηκεύεται <b>μόνο τοπικά</b> (localStorage), στέλνεται απευθείας στο elevenlabs.io. Πάρε key από elevenlabs.io → Profile → API Keys.</div>
+    <input type="password" id="aiKey" class="ai-in" placeholder="ElevenLabs API key (sk_...)" autocomplete="off">
+    <textarea id="aiPrompt" class="ai-in" placeholder="π.χ. soft warm marimba notification, two gentle ascending notes, clean"></textarea>
+    <div class="slider-row"><label>Διάρκεια <span id="aiDurLbl">5s</span></label>
+      <input type="range" id="aiDur" min="1" max="15" value="5" step="0.5"></div>
+    <div class="trim-actions">
+      <button class="mbtn mbtn-dl" id="aiGen">✨ Generate</button>
+      <button class="mbtn mbtn-x" id="aiClose">Κλείσιμο</button>
+    </div>
+    <div class="ai-status" id="aiStatus"></div>
+    <div class="ai-out" id="aiOut">
+      <audio id="aiAudio" controls></audio>
+      <button class="mbtn mbtn-dl" id="aiDl" style="width:100%">⬇ Κατέβασε ringtone (.mp3)</button>
     </div>
   </div>
 </div>
@@ -498,6 +532,59 @@
     deferred.userChoice.finally(function(){ deferred=null; btn.style.display='none'; });
   };
   window.addEventListener('appinstalled',function(){ if(btn) btn.style.display='none'; });
+})();
+</script>
+
+<script>
+/* AI sound generator — ElevenLabs sound-generation, bring-your-own-key (CORS allowed) */
+(function(){
+  var modal=document.getElementById('aiModal');
+  var keyEl=document.getElementById('aiKey'), promptEl=document.getElementById('aiPrompt');
+  var durEl=document.getElementById('aiDur'), durLbl=document.getElementById('aiDurLbl');
+  var statusEl=document.getElementById('aiStatus'), out=document.getElementById('aiOut');
+  var audio=document.getElementById('aiAudio'), dlBtn=document.getElementById('aiDl'), genBtn=document.getElementById('aiGen');
+  var lastUrl=null;
+
+  try{ var k=localStorage.getItem('rv_eleven_key'); if(k) keyEl.value=k; }catch(e){}
+  durEl.oninput=function(){ durLbl.textContent=durEl.value+'s'; };
+
+  document.getElementById('openAI').onclick=function(){ modal.classList.add('show'); };
+  document.getElementById('aiClose').onclick=close;
+  modal.addEventListener('click',function(e){ if(e.target===modal) close(); });
+  function close(){ modal.classList.remove('show'); audio.pause(); }
+  function st(m,e){ statusEl.textContent=m; statusEl.className='ai-status'+(e?' err':''); }
+
+  genBtn.onclick=function(){
+    var key=keyEl.value.trim(), prompt=promptEl.value.trim();
+    if(!key){ st('Βάλε ElevenLabs API key.',true); return; }
+    if(!prompt){ st('Γράψε περιγραφή ήχου.',true); return; }
+    try{ localStorage.setItem('rv_eleven_key',key); }catch(e){}
+    genBtn.disabled=true; out.classList.remove('show'); st('⏳ Δημιουργία... (~10-20s)');
+    fetch('https://api.elevenlabs.io/v1/sound-generation',{
+      method:'POST',
+      headers:{ 'xi-api-key':key, 'Content-Type':'application/json' },
+      body:JSON.stringify({ text:prompt, duration_seconds:parseFloat(durEl.value), prompt_influence:0.4 })
+    }).then(function(res){
+      if(!res.ok) return res.text().then(function(t){
+        var msg=t; try{ msg=JSON.parse(t).detail.message||t; }catch(e){}
+        throw new Error('('+res.status+') '+String(msg).slice(0,160));
+      });
+      return res.blob();
+    }).then(function(blob){
+      if(lastUrl) URL.revokeObjectURL(lastUrl);
+      lastUrl=URL.createObjectURL(blob);
+      audio.src=lastUrl; out.classList.add('show'); st('✅ Έτοιμο!'); genBtn.disabled=false;
+      audio.play().catch(function(){});
+    }).catch(function(err){
+      genBtn.disabled=false;
+      st('❌ '+err.message,true);
+    });
+  };
+  dlBtn.onclick=function(){
+    if(!lastUrl) return;
+    var a=document.createElement('a'); a.href=lastUrl;
+    a.download='rv_original_'+Date.now()+'.mp3'; document.body.appendChild(a); a.click(); a.remove();
+  };
 })();
 </script>
 </body>
