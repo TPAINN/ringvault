@@ -16,9 +16,9 @@ const OUT = path.join(__dirname, '..', '..', 'web', 'catalog.json');
 const UA = 'RingVault/0.5 (catalog harvest; respects robots.txt)';
 
 const MIXKIT_BASE = 'https://mixkit.co/free-sound-effects';
-const MAX_CATS = 150;
+const MAX_CATS = 300;
 const PAGES_PER_CAT = 3;
-const DELAY = 450;
+const DELAY = 400;
 
 // Curated categories that yield ringtone/notification/alarm-worthy sounds — pulled first.
 const PREFERRED = [
