@@ -1,0 +1,17 @@
+{
+  "name": "RingVault — Ringtones, Notifications & Alarms",
+  "short_name": "RingVault",
+  "description": "Χιλιάδες δωρεάν, σύντομοι ήχοι για ringtone, notification & alarm. Preview, download, φτιάξε δικό σου.",
+  "lang": "el",
+  "start_url": "app.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f0f1a",
+  "theme_color": "#0f0f1a",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ],
+  "categories": ["music", "utilities", "personalization"]
+}

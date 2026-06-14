@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RingVault — Ringtones, Notifications & Alarms</title>
+<meta name="theme-color" content="#0f0f1a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  :root{
+    --bg:#0f0f1a; --surface:#1b1b2f; --surface-2:#24243e; --surface-3:#2e2e4d;
+    --primary:#ffb74d; --primary-d:#e09b35; --on-primary:#1b1b2f;
+    --text:#ececf1; --muted:#9a9ab0; --good:#66bb6a; --r:18px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:90px}
+  a{color:inherit}
+
+  header{position:sticky;top:0;z-index:30;background:rgba(15,15,26,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--surface-2)}
+  .hbar{max-width:1080px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .logo{font-size:1.25rem;font-weight:800;letter-spacing:-.5px;white-space:nowrap}
+  .logo span{color:var(--primary)}
+  .search{flex:1;min-width:160px;position:relative}
+  .search input{width:100%;background:var(--surface);border:1px solid var(--surface-2);color:var(--text);
+    padding:10px 14px 10px 38px;border-radius:999px;font-size:.92rem;outline:none}
+  .search input:focus{border-color:var(--primary)}
+  .search::before{content:'🔍';position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:.85rem;opacity:.6}
+  .btn-own{background:var(--primary);color:var(--on-primary);border:none;padding:10px 16px;border-radius:999px;
+    font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap}
+  .btn-own:hover{background:var(--primary-d)}
+
+  .tabs{max-width:1080px;margin:0 auto;padding:10px 20px 0;display:flex;gap:8px;flex-wrap:wrap}
+  .tab{background:var(--surface);border:1px solid var(--surface-2);color:var(--muted);padding:8px 18px;border-radius:999px;
+    cursor:pointer;font-size:.9rem;font-weight:600}
+  .tab.on{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+  .tab small{opacity:.7;font-weight:500}
+
+  .controls{max-width:1080px;margin:0 auto;padding:14px 20px 4px;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+  .ctl-group{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .ctl-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-right:2px}
+  .chip{background:var(--surface);border:1px solid var(--surface-2);color:var(--muted);padding:5px 12px;border-radius:999px;
+    cursor:pointer;font-size:.78rem}
+  .chip.on{background:var(--surface-3);color:var(--primary);border-color:var(--primary)}
+  select.sort{background:var(--surface);border:1px solid var(--surface-2);color:var(--text);padding:6px 10px;border-radius:8px;font-size:.8rem}
+
+  .tagbar{max-width:1080px;margin:0 auto;padding:6px 20px 0;display:flex;gap:6px;flex-wrap:wrap}
+  .tagbar .chip{font-size:.74rem}
+
+  .meta-row{max-width:1080px;margin:0 auto;padding:12px 20px 4px;color:var(--muted);font-size:.82rem;display:flex;justify-content:space-between;align-items:center}
+
+  main{max-width:1080px;margin:0 auto;padding:8px 20px 40px}
+  .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+  .scard{background:var(--surface);border:1px solid var(--surface-2);border-radius:var(--r);padding:14px;display:flex;
+    align-items:center;gap:12px;transition:border-color .15s}
+  .scard:hover{border-color:var(--surface-3)}
+  .scard.playing{border-color:var(--primary);background:#221c10}
+  .play{width:44px;height:44px;border-radius:50%;background:var(--surface-2);color:var(--primary);border:none;cursor:pointer;
+    font-size:1rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s}
+  .scard.playing .play{background:var(--primary);color:var(--on-primary)}
+  .play:hover{background:var(--surface-3)}
+  .sinfo{flex:1;min-width:0}
+  .stitle{font-size:.92rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ssub{font-size:.72rem;color:var(--muted);margin-top:2px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+  .dur{color:var(--primary);font-weight:600}
+  .ttag{background:var(--surface-2);padding:1px 7px;border-radius:6px;font-size:.66rem}
+  .prog{height:3px;background:var(--surface-2);border-radius:2px;margin-top:8px;overflow:hidden;display:none}
+  .scard.playing .prog{display:block}
+  .prog i{display:block;height:100%;background:var(--primary);width:0%}
+  .dl{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;flex-shrink:0;padding:6px}
+  .dl:hover{color:var(--primary)}
+  .fav{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.15rem;flex-shrink:0;padding:6px;line-height:1}
+  .fav:hover{color:#ff6b8a}
+  .fav.on{color:#ff4d6d}
+
+  .empty{text-align:center;color:var(--muted);padding:60px 20px;font-size:1rem}
+  .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);z-index:70;background:var(--surface-3);
+    color:var(--text);padding:12px 18px;border-radius:12px;font-size:.84rem;max-width:90vw;text-align:center;border:1px solid var(--primary);
+    box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .loading{text-align:center;color:var(--muted);padding:60px 20px}
+
+  /* now-playing bar */
+  .npbar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--surface);border-top:1px solid var(--surface-2);
+    transform:translateY(110%);transition:transform .25s}
+  .npbar.show{transform:none}
+  .npinner{max-width:1080px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px}
+  .np-play{width:40px;height:40px;border-radius:50%;background:var(--primary);color:var(--on-primary);border:none;cursor:pointer;font-size:.95rem;flex-shrink:0}
+  .np-info{flex:1;min-width:0}
+  .np-title{font-size:.88rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .np-sub{font-size:.7rem;color:var(--muted)}
+  .np-close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer}
+
+  /* modal */
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;padding:20px}
+  .modal.show{display:flex}
+  .mbox{background:var(--surface);border:1px solid var(--surface-2);border-radius:22px;max-width:520px;width:100%;padding:24px}
+  .mbox h2{font-size:1.25rem;margin-bottom:6px}
+  .mbox h2 span{color:var(--primary)}
+  .mbox p.hint{color:var(--muted);font-size:.86rem;margin-bottom:16px;line-height:1.55}
+  .drop{border:2px dashed var(--surface-3);border-radius:14px;padding:26px;text-align:center;color:var(--muted);cursor:pointer;font-size:.9rem}
+  .drop:hover{border-color:var(--primary);color:var(--text)}
+  .trim{margin-top:18px;display:none}
+  .trim.show{display:block}
+  .wave{height:64px;background:var(--bg);border-radius:10px;margin-bottom:14px;position:relative;overflow:hidden}
+  .wave canvas{width:100%;height:100%;display:block}
+  .wave .sel{position:absolute;top:0;bottom:0;background:rgba(255,183,77,.22);border-left:2px solid var(--primary);border-right:2px solid var(--primary)}
+  .slider-row{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+  .slider-row label{font-size:.78rem;color:var(--muted);display:flex;justify-content:space-between}
+  .slider-row input[type=range]{width:100%;accent-color:var(--primary)}
+  .trim-actions{display:flex;gap:10px;flex-wrap:wrap}
+  .mbtn{border:none;padding:10px 18px;border-radius:10px;font-weight:600;font-size:.86rem;cursor:pointer}
+  .mbtn-prev{background:var(--surface-2);color:var(--text)}
+  .mbtn-dl{background:var(--primary);color:var(--on-primary)}
+  .mbtn-x{background:none;color:var(--muted);margin-left:auto}
+  .fname{font-size:.8rem;color:var(--good);margin-bottom:10px;word-break:break-all}
+
+  @media(max-width:560px){
+    .hbar{padding:12px 14px}
+    .controls{gap:12px}
+    main{padding:8px 14px 40px}
+    .list{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hbar">
+    <div class="logo">🔔 Ring<span>Vault</span></div>
+    <div class="search"><input id="search" type="text" placeholder="Αναζήτηση ήχου..."></div>
+    <button class="btn-own" id="installBtn" style="display:none;background:var(--surface-2);color:var(--primary)">⤓ Εγκατάσταση</button>
+    <button class="btn-own" id="openOwn">＋ Δικό σου ringtone</button>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="controls">
+    <div class="ctl-group">
+      <span class="ctl-label">Διάρκεια</span>
+      <span class="chip on" data-dur="0">Όλα</span>
+      <span class="chip" data-dur="5">≤5s</span>
+      <span class="chip" data-dur="10">≤10s</span>
+      <span class="chip" data-dur="20">≤20s</span>
+      <span class="chip" data-dur="30">≤30s</span>
+    </div>
+    <div class="ctl-group">
+      <span class="ctl-label">Ταξινόμηση</span>
+      <select class="sort" id="sort">
+        <option value="short">Συντομότερα πρώτα</option>
+        <option value="new">Νεότερα</option>
+        <option value="popular">Δημοφιλή</option>
+        <option value="random">Τυχαία</option>
+      </select>
+    </div>
+  </div>
+  <div class="tagbar" id="tagbar"></div>
+</header>
+
+<div class="meta-row"><span id="count">—</span><span id="srcnote"></span></div>
+
+<main>
+  <div id="list" class="list"></div>
+  <div id="status" class="loading">Φόρτωση catalog...</div>
+</main>
+
+<!-- now playing -->
+<div class="npbar" id="npbar">
+  <div class="npinner">
+    <button class="np-play" id="npPlay">⏸</button>
+    <div class="np-info"><div class="np-title" id="npTitle"></div><div class="np-sub" id="npSub"></div></div>
+    <button class="np-close" id="npClose">✕</button>
+  </div>
+</div>
+
+<!-- make your own -->
+<div class="modal" id="ownModal">
+  <div class="mbox">
+    <h2>Φτιάξε <span>δικό σου</span> ringtone</h2>
+    <p class="hint">Διάλεξε ένα τραγούδι/ήχο από τη συσκευή σου, κόψε το κομμάτι που θες (π.χ. το refren) και κατέβασέ το ως clip.
+      Όλα γίνονται <strong>τοπικά στον browser</strong> — τίποτα δεν ανεβαίνει πουθενά.</p>
+    <div class="drop" id="drop">🎵 Κάνε κλικ ή σύρε εδώ ένα αρχείο ήχου (mp3, wav, m4a...)</div>
+    <input type="file" id="file" accept="audio/*" hidden>
+    <div class="trim" id="trim">
+      <div class="fname" id="fname"></div>
+      <div class="wave"><canvas id="wave"></canvas><div class="sel" id="sel"></div></div>
+      <div class="slider-row">
+        <label>Αρχή <span id="startLbl">0.0s</span></label>
+        <input type="range" id="start" min="0" max="100" value="0" step="0.1">
+      </div>
+      <div class="slider-row">
+        <label>Διάρκεια clip <span id="lenLbl">20s</span></label>
+        <input type="range" id="len" min="3" max="40" value="20" step="1">
+      </div>
+      <div class="trim-actions">
+        <button class="mbtn mbtn-prev" id="preview">▶ Άκου το clip</button>
+        <button class="mbtn mbtn-dl" id="download">⬇ Κατέβασε ringtone (.wav)</button>
+        <button class="mbtn mbtn-x" id="closeOwn">Κλείσιμο</button>
+      </div>
+      <p class="hint" style="margin-top:12px;margin-bottom:0">Στο κινητό: άνοιξε το αρχείο → <strong>Set as ringtone</strong>, ή βάλ' το στον φάκελο Ringtones.</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<audio id="audio" preload="none"></audio>
+
+<!-- catalog loaded as a JS var for file:// support; falls back to fetch -->
+<script src="catalog.js" onerror="window.__noCatalogJs=true"></script>
+<script>
+(function(){
+  'use strict';
+  var audio = document.getElementById('audio');
+  var CATALOG = [], state = { cat:'ringtone', dur:0, sort:'short', q:'', tag:'' };
+  var playingId = null;
+
+  /* favorites (localStorage) */
+  var FAV = new Set();
+  try { FAV = new Set(JSON.parse(localStorage.getItem('rv_favs') || '[]')); } catch(e){}
+  function saveFav(){ try { localStorage.setItem('rv_favs', JSON.stringify([...FAV])); } catch(e){} }
+  function baseItems(){
+    return state.cat==='fav'
+      ? CATALOG.filter(function(s){ return FAV.has(s.id); })
+      : CATALOG.filter(function(s){ return s.category===state.cat; });
+  }
+
+  /* ---------- load ---------- */
+  function boot(data){
+    CATALOG = (data||[]).filter(function(s){ return s && s.url && s.durationSec; });
+    if(!CATALOG.length){ document.getElementById('status').textContent='Άδειο catalog. Τρέξε: node scripts/harvest-web.js'; return; }
+    document.getElementById('status').style.display='none';
+    buildTabs(); render();
+  }
+  if (window.RINGVAULT_CATALOG) boot(window.RINGVAULT_CATALOG);
+  else fetch('catalog.json').then(function(r){return r.json();}).then(boot).catch(function(){
+    document.getElementById('status').innerHTML='Δεν βρέθηκε catalog.json/catalog.js.<br>Τρέξε <code>node scripts/harvest-web.js</code> στο backend.';
+  });
+
+  /* ---------- tabs ---------- */
+  var LABELS = { ringtone:'Ringtones', notification:'Notifications', alarm:'Alarms', fav:'❤ Αγαπημένα' };
+  function buildTabs(){
+    var counts = { ringtone:0, notification:0, alarm:0 };
+    CATALOG.forEach(function(s){ if(counts[s.category]!=null) counts[s.category]++; });
+    counts.fav = FAV.size;
+    var el = document.getElementById('tabs'); el.innerHTML='';
+    ['ringtone','notification','alarm','fav'].forEach(function(c){
+      var b=document.createElement('button');
+      b.className='tab'+(c===state.cat?' on':'');
+      b.innerHTML=LABELS[c]+' <small>('+counts[c]+')</small>';
+      b.onclick=function(){ state.cat=c; state.tag=''; document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');}); b.classList.add('on'); buildTags(); render(); };
+      el.appendChild(b);
+    });
+    buildTags();
+  }
+
+  /* ---------- tag chips (top tags in current category) ---------- */
+  function buildTags(){
+    var freq={};
+    baseItems().forEach(function(s){
+      (s.tags||[]).forEach(function(t){ if(t.length>1&&t.length<16) freq[t]=(freq[t]||0)+1; });
+    });
+    var top=Object.keys(freq).sort(function(a,b){return freq[b]-freq[a];}).slice(0,14);
+    var bar=document.getElementById('tagbar'); bar.innerHTML='';
+    if(!top.length) return;
+    var all=document.createElement('span'); all.className='chip'+(state.tag===''?' on':''); all.textContent='# όλα';
+    all.onclick=function(){ state.tag=''; buildTags(); render(); }; bar.appendChild(all);
+    top.forEach(function(t){
+      var c=document.createElement('span'); c.className='chip'+(state.tag===t?' on':''); c.textContent='#'+t;
+      c.onclick=function(){ state.tag=(state.tag===t?'':t); buildTags(); render(); }; bar.appendChild(c);
+    });
+  }
+
+  /* ---------- render list ---------- */
+  function currentItems(){
+    var items=baseItems();
+    if(state.dur) items=items.filter(function(s){ return s.durationSec<=state.dur; });
+    if(state.tag) items=items.filter(function(s){ return (s.tags||[]).indexOf(state.tag)>-1; });
+    if(state.q){ var q=state.q.toLowerCase();
+      items=items.filter(function(s){ return s.title.toLowerCase().indexOf(q)>-1 || (s.tags||[]).join(' ').indexOf(q)>-1; }); }
+    if(state.sort==='short') items.sort(function(a,b){return a.durationSec-b.durationSec;});
+    else if(state.sort==='new') items.sort(function(a,b){return (b.createdAt||'').localeCompare(a.createdAt||'');});
+    else if(state.sort==='popular') items.sort(function(a,b){return (b.popularity||0)-(a.popularity||0);});
+    else if(state.sort==='random') items.sort(function(){return Math.random()-0.5;});
+    return items;
+  }
+
+  function render(){
+    var items=currentItems();
+    document.getElementById('count').textContent=items.length+' ήχοι · '+LABELS[state.cat];
+    var list=document.getElementById('list'); list.innerHTML='';
+    if(!items.length){
+      list.innerHTML = state.cat==='fav'
+        ? '<div class="empty">Δεν έχεις αγαπημένα ακόμα.<br>Πάτα το ♡ σε όποιον ήχο σ\' αρέσει.</div>'
+        : '<div class="empty">Κανένας ήχος με αυτά τα φίλτρα.</div>';
+      return;
+    }
+    var frag=document.createDocumentFragment();
+    items.forEach(function(s){ frag.appendChild(card(s)); });
+    list.appendChild(frag);
+  }
+
+  function card(s){
+    var d=document.createElement('div'); d.className='scard'+(s.id===playingId?' playing':''); d.dataset.id=s.id;
+    var tags=(s.tags||[]).slice(0,3).map(function(t){return '<span class="ttag">'+esc(t)+'</span>';}).join('');
+    d.innerHTML=
+      '<button class="play">'+(s.id===playingId?'⏸':'▶')+'</button>'+
+      '<div class="sinfo"><div class="stitle">'+esc(s.title)+'</div>'+
+      '<div class="ssub"><span class="dur">'+s.durationSec+'s</span>'+tags+
+      (s.author?'<span>· '+esc(s.author)+'</span>':'')+'</div>'+
+      '<div class="prog"><i></i></div></div>'+
+      '<button class="fav'+(FAV.has(s.id)?' on':'')+'" title="Αγαπημένο">'+(FAV.has(s.id)?'❤':'♡')+'</button>'+
+      '<button class="dl" title="Κατέβασε">⬇</button>';
+    d.querySelector('.play').onclick=function(){ toggle(s); };
+    d.querySelector('.dl').onclick=function(e){ e.stopPropagation(); dl(s); };
+    d.querySelector('.fav').onclick=function(e){ e.stopPropagation(); toggleFav(s, d); };
+    return d;
+  }
+
+  /* ---------- playback (single instance) ---------- */
+  function toggle(s){
+    if(playingId===s.id){ audio.pause(); return; }
+    playingId=s.id; audio.src=s.url; audio.play().catch(function(){});
+    syncCards();
+    showNP(s);
+  }
+  function syncCards(){
+    document.querySelectorAll('.scard').forEach(function(c){
+      var on=c.dataset.id===playingId;
+      c.classList.toggle('playing',on);
+      c.querySelector('.play').textContent=on?'⏸':'▶';
+      if(!on){ var bar=c.querySelector('.prog i'); if(bar) bar.style.width='0%'; }
+    });
+  }
+  audio.addEventListener('timeupdate',function(){
+    if(!audio.duration) return;
+    var pct=(audio.currentTime/audio.duration*100).toFixed(1)+'%';
+    var c=document.querySelector('.scard.playing .prog i'); if(c) c.style.width=pct;
+  });
+  audio.addEventListener('ended',function(){ playingId=null; syncCards(); hideNP(); });
+  audio.addEventListener('pause',function(){ document.getElementById('npPlay').textContent='▶'; });
+  audio.addEventListener('play',function(){ document.getElementById('npPlay').textContent='⏸'; });
+
+  /* now playing bar */
+  function showNP(s){
+    document.getElementById('npTitle').textContent=s.title;
+    document.getElementById('npSub').textContent=s.durationSec+'s · '+(s.license||'')+(s.author?' · '+s.author:'');
+    document.getElementById('npbar').classList.add('show');
+  }
+  function hideNP(){ document.getElementById('npbar').classList.remove('show'); }
+  document.getElementById('npPlay').onclick=function(){ if(audio.paused) audio.play(); else audio.pause(); };
+  document.getElementById('npClose').onclick=function(){ audio.pause(); playingId=null; syncCards(); hideNP(); };
+
+  var isAndroid=/android/i.test(navigator.userAgent);
+  var toastT;
+  function toast(msg,ms){
+    var t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show');
+    clearTimeout(toastT); toastT=setTimeout(function(){ t.classList.remove('show'); }, ms||3500);
+  }
+  function dl(s){
+    var a=document.createElement('a'); a.href=s.url; a.download=(s.title||'ringtone').replace(/[^\w\-]+/g,'_')+'.mp3';
+    a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); a.remove();
+    if(isAndroid) toast('⬇ Κατέβηκε. Άνοιξε το αρχείο → <b>⋮</b> → <b>Use as ringtone</b><br>(ή βάλ\' το στον φάκελο <b>Ringtones</b>)', 5000);
+    else toast('⬇ Κατέβηκε ο ήχος.');
+  }
+
+  function toggleFav(s, cardEl){
+    if(FAV.has(s.id)) FAV.delete(s.id); else FAV.add(s.id);
+    saveFav();
+    // update the fav tab counter
+    var favTab=document.querySelectorAll('.tab')[3];
+    if(favTab) favTab.innerHTML=LABELS.fav+' <small>('+FAV.size+')</small>';
+    if(state.cat==='fav'){ render(); return; }          // viewing favorites → drop removed one
+    var btn=cardEl.querySelector('.fav');
+    var on=FAV.has(s.id); btn.classList.toggle('on',on); btn.textContent=on?'❤':'♡';
+  }
+
+  /* ---------- controls ---------- */
+  document.querySelectorAll('[data-dur]').forEach(function(ch){
+    ch.onclick=function(){ document.querySelectorAll('[data-dur]').forEach(function(x){x.classList.remove('on');});
+      ch.classList.add('on'); state.dur=parseInt(ch.dataset.dur,10); render(); };
+  });
+  document.getElementById('sort').onchange=function(e){ state.sort=e.target.value; render(); };
+  var st;
+  document.getElementById('search').oninput=function(e){ clearTimeout(st); var v=e.target.value;
+    st=setTimeout(function(){ state.q=v.trim(); render(); },180); };
+
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ================= MAKE YOUR OWN (trim local file -> WAV) ================= */
+  var ac, decoded=null;
+  var modal=document.getElementById('ownModal');
+  document.getElementById('openOwn').onclick=function(){ modal.classList.add('show'); };
+  document.getElementById('closeOwn').onclick=closeOwn;
+  function closeOwn(){ modal.classList.remove('show'); if(previewSrc){try{previewSrc.stop();}catch(e){}} }
+  modal.addEventListener('click',function(e){ if(e.target===modal) closeOwn(); });
+
+  var drop=document.getElementById('drop'), fileInput=document.getElementById('file');
+  drop.onclick=function(){ fileInput.click(); };
+  drop.ondragover=function(e){ e.preventDefault(); drop.style.borderColor='var(--primary)'; };
+  drop.ondragleave=function(){ drop.style.borderColor=''; };
+  drop.ondrop=function(e){ e.preventDefault(); drop.style.borderColor=''; if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); };
+  fileInput.onchange=function(e){ if(e.target.files[0]) loadFile(e.target.files[0]); };
+
+  function loadFile(file){
+    document.getElementById('fname').textContent='⏳ '+file.name;
+    document.getElementById('trim').classList.add('show');
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+      ac.decodeAudioData(ev.target.result.slice(0)).then(function(buf){
+        decoded=buf;
+        document.getElementById('fname').textContent='✅ '+file.name+' · '+buf.duration.toFixed(1)+'s';
+        var startEl=document.getElementById('start');
+        startEl.max=Math.max(0,buf.duration-1).toFixed(1);
+        startEl.value=0;
+        drawWave(buf); updateSel();
+      }).catch(function(){ document.getElementById('fname').textContent='❌ Δεν διαβάστηκε το αρχείο (δοκίμασε mp3/wav).'; });
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function drawWave(buf){
+    var cv=document.getElementById('wave'); var c=cv.getContext('2d');
+    var w=cv.width=cv.offsetWidth*2, h=cv.height=128;
+    c.clearRect(0,0,w,h); c.fillStyle='#3a3a5e';
+    var data=buf.getChannelData(0), step=Math.floor(data.length/w)||1;
+    for(var x=0;x<w;x++){ var min=1,max=-1;
+      for(var i=0;i<step;i++){ var v=data[x*step+i]||0; if(v<min)min=v; if(v>max)max=v; }
+      c.fillRect(x,(1+min)*h/2,1,Math.max(1,(max-min)*h/2));
+    }
+  }
+
+  var startR=document.getElementById('start'), lenR=document.getElementById('len');
+  startR.oninput=updateSel; lenR.oninput=updateSel;
+  function updateSel(){
+    if(!decoded) return;
+    var start=parseFloat(startR.value), len=Math.min(parseFloat(lenR.value), decoded.duration-start);
+    if(len<0)len=0;
+    document.getElementById('startLbl').textContent=start.toFixed(1)+'s';
+    document.getElementById('lenLbl').textContent=Math.round(len)+'s';
+    var sel=document.getElementById('sel');
+    sel.style.left=(start/decoded.duration*100)+'%';
+    sel.style.width=(len/decoded.duration*100)+'%';
+  }
+
+  var previewSrc=null;
+  document.getElementById('preview').onclick=function(){
+    if(!decoded) return;
+    if(previewSrc){try{previewSrc.stop();}catch(e){}}
+    var start=parseFloat(startR.value), len=Math.min(parseFloat(lenR.value), decoded.duration-start);
+    previewSrc=ac.createBufferSource(); previewSrc.buffer=decoded; previewSrc.connect(ac.destination);
+    previewSrc.start(0,start,len);
+  };
+
+  document.getElementById('download').onclick=function(){
+    if(!decoded) return;
+    var start=parseFloat(startR.value), len=Math.min(parseFloat(lenR.value), decoded.duration-start);
+    var blob=sliceToWav(decoded,start,len);
+    var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+    a.download='my_ringtone_'+Math.round(len)+'s.wav'; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1000);
+  };
+
+  // slice AudioBuffer [start,start+len] -> 16-bit PCM WAV Blob
+  function sliceToWav(buf,start,len){
+    var sr=buf.sampleRate, ch=Math.min(buf.numberOfChannels,2);
+    var s0=Math.floor(start*sr), s1=Math.min(buf.length, Math.floor((start+len)*sr));
+    var frames=Math.max(0,s1-s0);
+    var chans=[]; for(var c=0;c<ch;c++) chans.push(buf.getChannelData(c).subarray(s0,s1));
+    var bytes=44+frames*ch*2, ab=new ArrayBuffer(bytes), dv=new DataView(ab), o=0;
+    function str(s){ for(var i=0;i<s.length;i++) dv.setUint8(o++,s.charCodeAt(i)); }
+    function u32(v){ dv.setUint32(o,v,true); o+=4; } function u16(v){ dv.setUint16(o,v,true); o+=2; }
+    str('RIFF'); u32(36+frames*ch*2); str('WAVE'); str('fmt '); u32(16); u16(1); u16(ch);
+    u32(sr); u32(sr*ch*2); u16(ch*2); u16(16); str('data'); u32(frames*ch*2);
+    for(var f=0;f<frames;f++) for(var k=0;k<ch;k++){
+      var v=Math.max(-1,Math.min(1,chans[k][f])); dv.setInt16(o,v<0?v*0x8000:v*0x7fff,true); o+=2;
+    }
+    return new Blob([ab],{type:'audio/wav'});
+  }
+})();
+</script>
+
+<script>
+/* PWA: service worker + install prompt (works only over https/localhost, not file://) */
+(function(){
+  if('serviceWorker' in navigator && location.protocol!=='file:'){
+    window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+  }
+  var deferred=null, btn=document.getElementById('installBtn');
+  window.addEventListener('beforeinstallprompt',function(e){
+    e.preventDefault(); deferred=e; if(btn) btn.style.display='inline-block';
+  });
+  if(btn) btn.onclick=function(){
+    if(!deferred) return;
+    deferred.prompt();
+    deferred.userChoice.finally(function(){ deferred=null; btn.style.display='none'; });
+  };
+  window.addEventListener('appinstalled',function(){ if(btn) btn.style.display='none'; });
+})();
+</script>
+</body>
+</html>
