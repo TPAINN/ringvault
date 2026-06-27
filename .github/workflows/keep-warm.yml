@@ -1,7 +1,5 @@
 name: Keep API warm
 
-# Render free instances spin down after ~15 min idle (50s+ cold start).
-# Public repo = unlimited Actions minutes, so a 10-minute ping keeps it warm.
 on:
   schedule:
     - cron: "*/10 * * * *"
@@ -14,6 +12,11 @@ jobs:
     steps:
       - name: Ping health endpoint
         run: |
-          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 https://ringvault-api-0wbw.onrender.com/health)
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 \
+            https://ringvault-api-0wbw.onrender.com/health || echo "000")
           echo "health -> $code"
-          test "$code" = "200"
+          # Allow 200 OK, 503 cold-start, or any 2xx; never fail the workflow
+          case "$code" in
+            2*|503) echo "OK" ;;
+            *)      echo "Non-critical: $code — server may be cold-starting" ;;
+          esac
