@@ -267,10 +267,16 @@
     document.getElementById('status').style.display='none';
     buildTabs(); render();
   }
-  if (window.RINGVAULT_CATALOG) boot(window.RINGVAULT_CATALOG);
-  else fetch('catalog.json').then(function(r){return r.json();}).then(boot).catch(function(){
-    document.getElementById('status').innerHTML='Δεν βρέθηκε catalog.json/catalog.js.<br>Τρέξε <code>node scripts/harvest-web.js</code> στο backend.';
-  });
+  function tryBoot(){
+    if(window.RINGVAULT_CATALOG){ boot(window.RINGVAULT_CATALOG); return; }
+    fetch('catalog.json').then(function(r){return r.json();}).then(boot).catch(function(){
+      var s=document.getElementById('status');
+      if(s){ s.style.display=''; s.innerHTML='Σφάλμα φόρτωσης. Ανανέωσε.'; }
+    });
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',tryBoot);
+  } else { tryBoot(); }
 
   /* ---------- tabs ---------- */
   var LABELS = { ringtone:'Ringtones', notification:'Notifications', alarm:'Alarms', fav:'❤ Αγαπημένα' };
