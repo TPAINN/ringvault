@@ -1,57 +1,67 @@
-# RingVault 🔔
+# RingVault
 
-Android app για Ringtones, Notifications & Alarms — Kotlin/Compose client + Node/Express/MongoDB backend.
+> Free ringtones, notifications & alarms for Android. No ads, no subscriptions.
 
-[![Landing](https://img.shields.io/badge/landing-ringvault.vercel.app-orange)](https://ringvault.vercel.app)
-[![API](https://img.shields.io/badge/API-onrender.com-46b3e6)](https://ringvault-api-0wbw.onrender.com/health)
-[![APK](https://img.shields.io/github/v/release/TPAINN/ringvault?label=APK)](https://github.com/TPAINN/ringvault/releases)
+[![Live](https://img.shields.io/badge/live-ringvault.vercel.app-f59e0b?style=flat-square)](https://ringvault.vercel.app/)
+[![API](https://img.shields.io/badge/API-onrender.com-46b3e6?style=flat-square)](https://ringvault-api-0wbw.onrender.com/health)
+[![APK](https://img.shields.io/github/v/release/TPAINN/ringvault?label=APK&style=flat-square)](https://github.com/TPAINN/ringvault/releases)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
-| | |
+![RingVault screenshot](docs/screenshot.jpg)
+
+---
+
+Curated free ringtones, notification sounds & alarms for Android. Preview instantly, set with one tap. Every sound is CC0, public domain or CC-BY — legally free forever. Weekly automated pipeline keeps the library fresh.
+
+## Features
+
+- Browse & preview hundreds of curated sounds
+- Set directly as ringtone / notification / alarm via MediaStore
+- All sounds CC0 / CC-BY — no copyright issues
+- Weekly automated ingest (Freesound + Pixabay)
+- No ads, no login, no subscriptions
+
+## Stack
+
+| Layer | Tech |
 |---|---|
-| 🌐 Landing page | https://ringvault.vercel.app |
-| ⚙️ Live API | https://ringvault-api-0wbw.onrender.com/api/sounds |
-| 📱 APK | [Releases](https://github.com/TPAINN/ringvault/releases) |
+| Android | Kotlin · Jetpack Compose · ExoPlayer |
+| Backend | Node.js · Express · MongoDB |
+| Ingest | Automated weekly cron (Freesound + Pixabay) |
+| Deploy | Vercel (landing) · Render (API + cron) |
 
-Δες το [CLAUDE.md](CLAUDE.md) για πλήρες context (αρχιτεκτονική, νομικοί περιορισμοί πηγών, phased plan).
+## Quick start
 
-## Backend — τοπικό setup
-
+**Backend:**
 ```bash
 cd backend
 npm install
-cp .env.example .env   # συμπλήρωσε MONGO_URI + API keys
+cp .env.example .env   # MONGO_URI, FREESOUND_API_KEY, PIXABAY_API_KEY
 npm run dev            # http://localhost:5000
-npm run ingest         # γέμισμα DB από Freesound + Pixabay
+npm run ingest         # populate DB
 ```
 
-API keys:
-- Freesound: https://freesound.org/apiv2/apply/
-- Pixabay: https://pixabay.com/api/docs/
-
-Endpoints: `GET /api/sounds`, `GET /api/sounds/:id`, `GET /api/sounds/search?q=`,
-`POST /api/sounds/:id/download`, `GET /api/meta/categories`, `GET /health`.
-
-## Deploy (Render)
-
-`render.yaml` ορίζει web service + weekly cron (Κυριακή 04:00 UTC).
-Blueprint deploy: New → Blueprint → δείξε στο repo. Όρισε `MONGO_URI`, `FREESOUND_API_KEY`, `PIXABAY_API_KEY`.
-
-## Android
-
-Άνοιξε τον φάκελο `android/` στο Android Studio (Ladybug ή νεότερο, JDK 17).
+**Android:** Open `android/` in Android Studio (Ladybug+, JDK 17) → Run.
 
 ```bash
 cd android
-./gradlew installDebug        # σε συνδεδεμένη συσκευή
-./gradlew assembleRelease     # signed APK (θέλει keystore — δες CLAUDE.md §8)
+./gradlew installDebug
+./gradlew assembleRelease   # signed APK
 ```
 
-Backend URL: default `https://ringvault-api-0wbw.onrender.com` (live). Override σε `~/.gradle/gradle.properties` ή `android/gradle.properties`:
+API keys: [Freesound](https://freesound.org/apiv2/apply/) · [Pixabay](https://pixabay.com/api/docs/)
+
+## API
 
 ```
-RINGVAULT_API_URL=http://10.0.2.2:5000
+GET  /api/sounds
+GET  /api/sounds/:id
+GET  /api/sounds/search?q=
+POST /api/sounds/:id/download
+GET  /api/meta/categories
+GET  /health
 ```
 
-(`10.0.2.2` = localhost από emulator.)
+## License
 
-MVP flow: Home tabs (Ringtones/Notifications/Alarms) → inline preview (ExoPlayer, ένα κάθε φορά) → bottom sheet → Set as Ringtone/Notification/Alarm μέσω MediaStore + `RingtoneManager`. Αν λείπει το WRITE_SETTINGS permission, ο ήχος αποθηκεύεται και ο χρήστης παίρνει snackbar με deep-link στις ρυθμίσεις.
+MIT
