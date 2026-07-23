@@ -11,6 +11,7 @@ const SOURCES = {
   commons: require('../scrapers/commons'),
   freesound: require('../scrapers/freesound'),
   pixabay: require('../scrapers/pixabay'),
+  jamendo: require('../scrapers/jamendo'),
 };
 
 async function ingest({ since } = {}) {

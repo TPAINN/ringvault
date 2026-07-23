@@ -95,6 +95,147 @@ async function start() {
   }
   await mongoose.connect(process.env.MONGO_URI);
   console.log('MongoDB connected');
+  
+  // Add enhanced metadata and analytics
+  app.get('/api/stats', async (req, res, next) => {
+    try {
+      const Sound = require('./models/Sound');
+      const [
+        totalActiveSounds,
+        soundsByCategory,
+        topTags,
+        recentAdds,
+        sourceBreakdown,
+        avgPopularity,
+        mostPopularSound,
+      ] = await Promise.all([
+        Sound.countDocuments({ active: true }),
+        Sound.aggregate([
+          { $match: { active: true } },
+          { $group: { _id: '$category', count: { $sum: 1 } } },
+        ]),
+        Sound.aggregate([
+          { $match: { active: true } },
+          { $unwind: '$tags' },
+          { $group: { _id: '$tags', count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+          { $limit: 20 },
+        ]),
+        Sound.find({ active: true })
+          .sort({ createdAt: -1 })
+          .limit(10)
+          .select('title category durationSec createdAt popularity'),
+        Sound.aggregate([
+          { $match: { active: true } },
+          { $group: { _id: '$source', count: { $sum: 1 } } },
+        ]),
+        Sound.aggregate([
+          { $match: { active: true } },
+          { $group: { _id: null, avg: { $avg: '$popularity' } } },
+        ]),
+        Sound.findOne({ active: true }).sort({ popularity: -1 }).select('title category popularity createdAt'),
+      ]);
+      
+      res.json({
+        totalActiveSounds,
+        soundsByCategory: Object.fromEntries(
+          soundsByCategory.map((item) => [item._id, item.count])
+        ),
+        topTags: topTags.map((item) => item._id),
+        recentAdds,
+        sourceBreakdown: Object.fromEntries(
+          sourceBreakdown.map((item) => [item._id, item.count])
+        ),
+        avgPopularity: avgPopularity[0]?.avg || 0,
+        mostPopularSound,
+      });
+    } catch (err) {
+      next(err);
+    }
+  });
+  
+// Enhanced search with fuzzy matching and suggestions
+  app.get('/api/sounds/search/enhanced', async (req, res, next) => {
+    try {
+      const q = String(req.query.q || '').trim();
+      if (!q) return res.json({ items: [], total: 0, page: 1, pages: 0 });
+      if (q.length > 100) return res.status(400).json({ error: 'Query too long' });
+      
+      const { page, limit, skip } = parsePaging(req.query);
+      
+      // Combine full-text search with regex for better results
+      const searchRegex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      const filter = { 
+        active: true,
+        $or: [
+          { $text: { $search: q } },
+          { title: searchRegex },
+          { tags: searchRegex },
+        ]
+      };
+      
+      const [items, total] = await Promise.all([
+        Sound.find(filter)
+          .sort({ score: { $meta: 'textScore' }, popularity: -1 })
+          .skip(skip)
+          .limit(limit)
+          .lean(),
+        Sound.countDocuments(filter),
+      ]);
+      
+      res.json({ items, total, page, pages: Math.ceil(total / limit) });
+    } catch (err) {
+      next(err);
+    }
+  });
+  
+  // Random featured sounds endpoint
+  app.get('/api/sounds/featured', async (req, res, next) => {
+    try {
+      const count = Math.min(parseInt(req.query.count, 10) || 10, 50);
+      const sounds = await Sound.aggregate([
+        { $match: { active: true } },
+        { $sample: { size: count } },
+        { $project: { title: 1, category: 1, durationSec: 1, previewUrl: 1, thumbnail: 1, popularity: 1 } },
+      ]);
+      res.json(sounds);
+    } catch (err) {
+      next(err);
+    }
+  });
+  
+  // Sound recommendations based on user behavior
+  app.get('/api/sounds/recommended/:id', async (req, res, next) => {
+    try {
+      if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(400).json({ error: 'Invalid id' });
+      }
+      
+      const sound = await Sound.findById(req.params.id).select('category tags title').lean();
+      if (!sound) return res.status(404).json({ error: 'Not found' });
+      
+      const recommendations = await Sound.aggregate([
+        { $match: {
+          active: true,
+          _id: { $ne: mongoose.Types.ObjectId(req.params.id) },
+          $or: [
+            { category: sound.category },
+            { tags: { $in: sound.tags } },
+          ],
+        } },
+        { $sample: { size: 20 } },
+        { $project: { title: 1, category: 1, durationSec: 1, previewUrl: 1, popularity: 1 } },
+      ]);
+      
+      res.json(recommendations);
+    } catch (err) {
+      next(err);
+    }
+  });
+  
+  // Jamendo integration - featured CC-BY tracks
+  app.use('/api/jamendo', require('./routes/jamendo'));
+  
   app.listen(PORT, () => console.log(`RingVault API listening on :${PORT}`));
 }
 
