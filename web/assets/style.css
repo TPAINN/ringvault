@@ -126,8 +126,10 @@ body.has-cursor.is-locked .cursor-mark { scale: 1.45; }
    a faint tint box defines the captured area. */
 .cursor-reticle {
   opacity: 0;
-  transition: opacity 0.2s var(--ease-out);
+  /* exit slightly faster than entrance — same easing language */
+  transition: opacity 0.16s var(--ease-out);
 }
+.cursor-reticle.is-active { transition-duration: 0.22s; }
 .cursor-reticle b {
   position: absolute;
   inset: 0;
@@ -151,18 +153,6 @@ body.has-cursor.is-locked .cursor-mark { scale: 1.45; }
 .cursor-reticle i::after  { bottom: 0; right: 0; border-left: 0; border-top: 0; }
 .cursor-reticle.is-active { opacity: 1; }
 .cursor-reticle.is-active b { opacity: 1; }
-
-/* ── Scroll progress ────────────────────────────────────── */
-.scroll-progress {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: var(--primary);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-  z-index: 300;
-  pointer-events: none;
-}
 
 /* ── Edge scroll rail — the custom scrollbar ──────────────
    2px track, 48px thumb; wakes on scroll, widens on hover,
