@@ -36,7 +36,7 @@
   .logo{font-family:var(--font-display);font-size:1.3rem;font-weight:800;letter-spacing:-.5px;white-space:nowrap}
   #logoMark::before{content:'';display:inline-block;width:20px;height:20px;margin-right:8px;vertical-align:-3px;background:var(--primary);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'/%3E%3Cpath d='M10.3 21a1.94 1.94 0 0 0 3.4 0'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'/%3E%3Cpath d='M10.3 21a1.94 1.94 0 0 0 3.4 0'/%3E%3C/svg%3E") center/contain no-repeat}
   .logo span{color:var(--primary)}
-  .search{flex:1;min-width:160px;position:relative}
+  .search{flex:1;min-width:160px;max-width:520px;position:relative}
   .search input{width:100%;background:var(--surface);border:1px solid var(--surface-2);color:var(--text);
     padding:10px 14px 10px 38px;border-radius:10px;font-size:.92rem;outline:none}
   .search input:focus{border-color:var(--primary)}
@@ -45,12 +45,13 @@
     font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap}
   .btn-own:hover{background:var(--primary-d)}
 
-  .tabs{max-width:1080px;margin:0 auto;padding:10px 20px 0;display:flex;gap:8px;flex-wrap:wrap}
-  .tab{background:var(--surface);border:1px solid var(--surface-2);color:var(--muted);padding:8px 18px;border-radius:10px;
-    cursor:pointer;font-size:.9rem;font-weight:600;transition:color .15s,border-color .15s}
-  .tab:hover{color:var(--text);border-color:var(--surface-3)}
-  .tab.on{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
-  .tab small{font-family:var(--font-mono);font-size:.68rem;opacity:.7;font-weight:500}
+  .tabs{max-width:1080px;margin:0 auto;padding:12px 20px 0;display:flex;gap:2px;flex-wrap:wrap}
+  .tab{background:transparent;border:none;border-bottom:2px solid transparent;color:var(--muted);padding:11px 18px 13px;
+    cursor:pointer;font-size:.92rem;font-weight:600;display:inline-flex;align-items:center;gap:7px;transition:color .15s}
+  .tab svg{width:15px;height:15px}
+  .tab:hover{color:var(--text)}
+  .tab.on{color:var(--primary);border-bottom-color:var(--primary)}
+  .tab small{font-family:var(--font-mono);font-size:.64rem;opacity:.6;font-weight:500}
 
   .controls{max-width:1080px;margin:0 auto;padding:14px 20px 4px;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
   .ctl-group{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
@@ -67,7 +68,14 @@
   .meta-row{max-width:1080px;margin:0 auto;padding:12px 20px 4px;color:var(--muted);font-size:.72rem;font-family:var(--font-mono);
     letter-spacing:.8px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
 
-  main{max-width:1080px;margin:0 auto;padding:8px 20px 40px}  .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+  main{max-width:1080px;margin:0 auto;padding:8px 20px 40px}
+  /* staggered entrance — inline style custom props set by app.js */
+  .scard{opacity:0;transform:translateY(14px) scale(.98);animation:cardin .5s var(--ease-out,cubic-bezier(.22,1,.36,1)) forwards;
+    animation-delay:calc(var(--i,0)*24ms)}
+  @keyframes cardin{to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){.scard{animation:none;opacity:1;transform:none}}
+  /* safety: if animations never ran (occluded/print), force cards visible */
+  html.booted .scard{animation:none;opacity:1;transform:none}  .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
   .scard{background:var(--surface);border:1px solid var(--surface-2);border-radius:10px;padding:14px;display:flex;
     align-items:center;gap:12px;transition:border-color .15s,transform .18s var(--ease-out)}
   .scard:hover{border-color:var(--surface-3);transform:translateY(-2px)}
@@ -100,7 +108,8 @@
   .fav:hover{color:#ff6b8a}
   .fav.on{color:#ff4d6d}
 
-  .empty{text-align:center;color:var(--muted);padding:60px 20px;font-size:1rem}
+  .empty{text-align:center;color:var(--muted);padding:70px 20px;font-size:.95rem}
+  .empty svg{width:30px;height:30px;opacity:.4;display:block;margin:0 auto 12px}
   .toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);z-index:70;background:var(--surface-3);
     color:var(--text);padding:12px 18px;border-radius:12px;font-size:.84rem;max-width:90vw;text-align:center;border:1px solid var(--primary);
     box-shadow:0 10px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
@@ -108,9 +117,12 @@
   .loading{text-align:center;color:var(--muted);padding:60px 20px}
 
   /* now-playing bar */
-  .npbar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(27,27,47,.9);backdrop-filter:blur(12px);border-top:1px solid var(--hairline);
+  .npbar{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(27,27,47,.9);backdrop-filter:blur(12px);border-top:1px solid var(--hairline);overflow:hidden;
     transform:translateY(110%);transition:transform .25s}
   .npbar.show{transform:none}
+  /* progress line across the bar's top edge — driven by --np from app.js */
+  .npbar::before{content:'';position:absolute;top:0;left:0;height:2px;width:100%;transform:scaleX(var(--np,0));
+    transform-origin:0 50%;background:linear-gradient(90deg,var(--primary-d),var(--primary-light));z-index:1;transition:transform .2s linear}
   .npinner{max-width:1080px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px}
   .np-play{width:40px;height:40px;border-radius:50%;background:var(--primary);color:var(--on-primary);border:none;cursor:pointer;font-size:.95rem;flex-shrink:0}
   .np-info{flex:1;min-width:0}
@@ -313,8 +325,8 @@
 
 <!-- catalog loaded as a JS var for file:// support; falls back to fetch -->
 <script defer src="catalog.js"></script>
-<script defer src="assets/app.js?v=2"></script>
-<script defer src="assets/rail.js?v=3"></script>
+<script defer src="assets/app.js?v=4"></script>
+<script defer src="assets/rail.js?v=4"></script>
 
 
 
