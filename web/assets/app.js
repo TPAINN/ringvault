@@ -90,7 +90,8 @@ function setIcon(el, name) { if (el) el.innerHTML = icon(name); }
     var all=document.createElement('span'); all.className='chip'+(state.tag===''?' on':''); all.textContent='# όλα';
     all.onclick=function(){ state.tag=''; buildTags(); render(); }; bar.appendChild(all);
     top.forEach(function(t){
-      var c=document.createElement('span'); c.className='chip'+(state.tag===t?' on':''); c.textContent='#'+t;
+      var c=document.createElement('span'); c.className='chip'+(state.tag===t?' on':'');
+      c.innerHTML='#'+esc(t)+'<b>'+(freq[t]>999?(freq[t]/1000).toFixed(1)+'k':freq[t])+'</b>';
       c.onclick=function(){ state.tag=(state.tag===t?'':t); buildTags(); render(); }; bar.appendChild(c);
     });
   }
@@ -126,6 +127,7 @@ function setIcon(el, name) { if (el) el.innerHTML = icon(name); }
 
   function card(s, i){
     var d=document.createElement('div'); d.className='scard'+(s.id===playingId?' playing':''); d.dataset.id=s.id; d.style.setProperty('--i', i);
+    d.dataset.ix = String(i + 1).padStart(3, '0');
     var tags=(s.tags||[]).slice(0,3).map(function(t){return '<span class="ttag">'+esc(t)+'</span>';}).join('');
     d.innerHTML=
       '<button class="play" aria-label="Play">'+(s.id===playingId?icon('pause'):icon('play'))+'</button>'+
