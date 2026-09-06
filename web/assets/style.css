@@ -102,8 +102,9 @@ body.has-cursor, body.has-cursor a, body.has-cursor button, body.has-cursor .scr
 .cursor-x { top: 0; bottom: 0; width: 1px; will-change: transform; }
 .cursor-y { left: 0; right: 0; height: 1px; will-change: transform; }
 .cursor-x, .cursor-y { transition: opacity 0.25s var(--ease-out); }
+/* locked = hairlines dim, they don't vanish — context is kept */
 body.has-cursor.is-locked .cursor-x,
-body.has-cursor.is-locked .cursor-y { opacity: 0; }
+body.has-cursor.is-locked .cursor-y { opacity: 0.35; }
 
 .cursor-mark, .cursor-reticle {
   position: fixed;
@@ -117,17 +118,30 @@ body.has-cursor.is-locked .cursor-y { opacity: 0; }
   width: 7px; height: 7px;
   background: var(--primary);
   transform: rotate(45deg);
+  transition: scale 0.25s var(--ease-out);
 }
-/* corner-bracket reticle — grows to lock onto the hovered target */
+body.has-cursor.is-locked .cursor-mark { scale: 1.45; }
+/* corner-bracket reticle — locks onto the hovered target.
+   Arm length adapts to the target via --arm (set by JS on lock);
+   a faint tint box defines the captured area. */
 .cursor-reticle {
   opacity: 0;
   transition: opacity 0.2s var(--ease-out);
+}
+.cursor-reticle b {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: rgba(var(--primary-rgb), 0.05);
+  border: 1px solid rgba(var(--primary-rgb), 0.16);
+  opacity: 0;
+  transition: opacity 0.25s var(--ease-out);
 }
 .cursor-reticle::before, .cursor-reticle::after,
 .cursor-reticle i::before, .cursor-reticle i::after {
   content: '';
   position: absolute;
-  width: 10px; height: 10px;
+  width: var(--arm, 10px); height: var(--arm, 10px);
   border: 1.5px solid var(--primary);
   transition: width 0.28s var(--ease-out), height 0.28s var(--ease-out);
 }
@@ -136,10 +150,7 @@ body.has-cursor.is-locked .cursor-y { opacity: 0; }
 .cursor-reticle i::before { bottom: 0; left: 0; border-right: 0; border-top: 0; }
 .cursor-reticle i::after  { bottom: 0; right: 0; border-left: 0; border-top: 0; }
 .cursor-reticle.is-active { opacity: 1; }
-.cursor-reticle.is-active::before, .cursor-reticle.is-active::after,
-.cursor-reticle.is-active i::before, .cursor-reticle.is-active i::after {
-  width: 14px; height: 14px;
-}
+.cursor-reticle.is-active b { opacity: 1; }
 
 /* ── Scroll progress ────────────────────────────────────── */
 .scroll-progress {
@@ -383,39 +394,7 @@ header.nav.scrolled .nav-inner {
 .spec-row dd { color: var(--text); font-weight: 500; text-align: right; }
 .spec-row dd i { font-style: normal; color: var(--primary); }
 
-/* scroll hint */
-.scroll-hint {
-  position: absolute;
-  left: 32px;
-  bottom: 40px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  font-family: var(--font-mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.34em;
-  color: var(--muted);
-  z-index: 1;
-}
-.scroll-hint .line {
-  width: 56px; height: 1px;
-  background: var(--hairline-strong);
-  position: relative;
-  overflow: hidden;
-}
-.scroll-hint .line::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: var(--primary);
-  transform: translateX(-100%);
-  animation: slide-hint 2.4s var(--ease-out) infinite;
-}
-@keyframes slide-hint {
-  0% { transform: translateX(-100%); }
-  55% { transform: translateX(0); }
-  100% { transform: translateX(100%); }
-}
+/* scroll-hint removed — the hero ends clean */
 
 /* ── Buttons — squared signature, no pills, no sweep ────── */
 .btn {
@@ -1237,7 +1216,6 @@ footer {
   .hero-in { grid-template-columns: 1fr; align-items: start; }
   .spec { border-left: none; padding-left: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 32px; max-width: 640px; }
   .spec-row:first-child { padding-top: 13px; }
-  .scroll-hint { display: none; }
   .f-row { grid-template-columns: 1fr; gap: 22px; padding: 40px 0; }
   .f-ix { display: flex; align-items: baseline; gap: 14px; padding-top: 0; }
   .f-ix .n { margin-bottom: 0; }
@@ -1282,7 +1260,7 @@ footer {
   [data-reveal-02] { visibility: visible !important; }
   .reveal { opacity: 1 !important; transform: none !important; }
   .join { transform: scaleX(1) !important; }
-  .m-caret, .m-ring, .halo::after, .hero-badge .dot, .scroll-hint .line::after { animation: none !important; }
+  .m-caret, .m-ring, .halo::after, .hero-badge .dot { animation: none !important; }
   .marquee-track { animation: none !important; }
   html { scroll-behavior: auto !important; }
   body.has-cursor, body.has-cursor a, body.has-cursor button { cursor: auto !important; }

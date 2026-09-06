@@ -47,7 +47,13 @@
   /* ── Custom cursor — viewfinder reticle (pointer:fine, motion-safe) ──
      No dot-and-ring blob: full-viewport crosshair hairlines, a diamond
      marker at the aim point, and corner brackets that snap out to lock
-     onto the bounds of whatever you hover — an instrument, not an ornament. */
+     onto the bounds of whatever you hover — an instrument, not an ornament.
+
+     Detection: one delegated mousemove. event.target.closest() picks the
+     deepest interactive element (a, button, .f-row, .step, [data-lock]),
+     so the reticle snaps from a whole row to the button inside it — and
+     nested locks morph between rects with the area tint as the tell.
+     Locks re-measure on resize/scroll so they never go stale. */
   function initCursor() {
     if (!finePointer || reduced) return;
     var xline = document.querySelector('.cursor-x');
@@ -68,38 +74,49 @@
     var rw = window.gsap.quickSetter(ret, 'width', 'px');
     var rh = window.gsap.quickSetter(ret, 'height', 'px');
 
-    var hx = 0, hy = 0, tx = 0, ty = 0, tw = 0, th = 0, raf = 0;
+    var hx = 0, hy = 0, tx = 0, ty = 0, tw = 0, th = 0;
     function reticleLoop() {
-      rx(hx + (tx - hx) * 0.18);
-      ry(hy + (ty - hy) * 0.18);
-      rw(hx + (tw - hx) * 0.18);
-      rh(hy + (th - hy) * 0.18);
-      hx = hx + (tx - hx) * 0.18;
-      hy = hy + (ty - hy) * 0.18;
-      raf = requestAnimationFrame(reticleLoop);
+      rx(hx + (tx - hx) * 0.22);
+      ry(hy + (ty - hy) * 0.22);
+      rw(hx + (tw - hx) * 0.22);
+      rh(hy + (th - hy) * 0.22);
+      hx = hx + (tx - hx) * 0.22;
+      hy = hy + (ty - hy) * 0.22;
+      requestAnimationFrame(reticleLoop);
     }
     reticleLoop();
 
+    var LOCK_SEL = 'a, button, .f-row, .step, [data-lock]';
+    var cur = null; /* currently locked element */
+
     function lock(el) {
+      cur = el;
       var r = el.getBoundingClientRect();
       tx = r.left; ty = r.top; tw = r.width; th = r.height;
+      ret.style.setProperty('--arm', (r.width > 420 ? 16 : r.width > 90 ? 12 : 9) + 'px');
       ret.classList.add('is-active');
       document.body.classList.add('is-locked');
     }
     function unlock() {
+      cur = null;
       tx = hx; ty = hy; tw = 0; th = 0;
       ret.classList.remove('is-active');
       document.body.classList.remove('is-locked');
     }
 
+    /* delegated detection — no per-element listeners, so dynamically
+       rendered nodes (feature media, marquee links) are covered too */
     window.addEventListener('mousemove', function (e) {
       lx(e.clientX); ly(e.clientY); mx(e.clientX); my(e.clientY);
+      var el = e.target.closest ? e.target.closest(LOCK_SEL) : null;
+      if (el === cur) return;
+      if (el) lock(el); else unlock();
     }, { passive: true });
 
-    document.querySelectorAll('a, button, .f-row, .step').forEach(function (el) {
-      el.addEventListener('mouseenter', function () { lock(el); });
-      el.addEventListener('mouseleave', unlock);
-    });
+    /* keep the lock honest when geometry shifts underneath it */
+    window.addEventListener('resize', function () { if (cur) lock(cur); });
+    if (lenis) lenis.on('scroll', function () { if (cur) lock(cur); });
+    else window.addEventListener('scroll', function () { if (cur) lock(cur); }, { passive: true });
   }
 
   /* ── Text Reveal 02 ───────────────────────────────────────
