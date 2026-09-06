@@ -129,7 +129,8 @@ function setIcon(el, name) { if (el) el.innerHTML = icon(name); }
       '<button class="play" aria-label="Play">'+(s.id===playingId?icon('pause'):icon('play'))+'</button>'+
       '<div class="sinfo"><div class="stitle">'+esc(s.title)+'</div>'+
       '<div class="ssub"><span class="dur">'+s.durationSec+'s</span>'+tags+
-      (s.author?'<span>· '+esc(s.author)+'</span>':'')+'</div>'+
+      (s.author?'<span>· '+esc(s.author)+'</span>':'')+
+      '<span class="eq" aria-hidden="true"><i></i><i></i><i></i></span></div>'+
       '<div class="prog"><i></i></div></div>'+
       '<button class="fav'+(FAV.has(s.id)?' on':'')+'" title="Αγαπημένο">'+(FAV.has(s.id)?icon('heart'):icon('heartOff'))+'</button>'+
       '<button class="dl" title="Κατέβασε">'+icon('download')+'</button>';
