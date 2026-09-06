@@ -44,23 +44,61 @@
     });
   }
 
-  /* ── Custom cursor (pointer:fine, motion-safe only) ─────── */
+  /* ── Custom cursor — viewfinder reticle (pointer:fine, motion-safe) ──
+     No dot-and-ring blob: full-viewport crosshair hairlines, a diamond
+     marker at the aim point, and corner brackets that snap out to lock
+     onto the bounds of whatever you hover — an instrument, not an ornament. */
   function initCursor() {
     if (!finePointer || reduced) return;
-    var dot = document.querySelector('.cursor-dot');
-    var ring = document.querySelector('.cursor-ring');
-    if (!dot || !ring) return;
+    var xline = document.querySelector('.cursor-x');
+    var yline = document.querySelector('.cursor-y');
+    var mark  = document.querySelector('.cursor-mark');
+    var ret   = document.querySelector('.cursor-reticle');
+    if (!xline || !yline || !mark || !ret) return;
     document.body.classList.add('has-cursor');
-    var dx = window.gsap.quickTo(dot, 'x', { duration: 0.08, ease: 'power2.out' });
-    var dy = window.gsap.quickTo(dot, 'y', { duration: 0.08, ease: 'power2.out' });
-    var rx = window.gsap.quickTo(ring, 'x', { duration: 0.45, ease: 'power3.out' });
-    var ry = window.gsap.quickTo(ring, 'y', { duration: 0.45, ease: 'power3.out' });
+
+    /* hairlines follow at 0.55 — felt, not chased; the diamond rides the tip */
+    var lx = window.gsap.quickTo(xline, 'x', { duration: 0.55, ease: 'power2.out' });
+    var ly = window.gsap.quickTo(yline, 'y', { duration: 0.55, ease: 'power2.out' });
+    var mx = window.gsap.quickTo(mark, 'x', { duration: 0.12, ease: 'power2.out' });
+    var my = window.gsap.quickTo(mark, 'y', { duration: 0.12, ease: 'power2.out' });
+    /* reticle is a strict follower — lerped bounds, no easing of its own */
+    var rx = window.gsap.quickSetter(ret, 'x', 'px');
+    var ry = window.gsap.quickSetter(ret, 'y', 'px');
+    var rw = window.gsap.quickSetter(ret, 'width', 'px');
+    var rh = window.gsap.quickSetter(ret, 'height', 'px');
+
+    var hx = 0, hy = 0, tx = 0, ty = 0, tw = 0, th = 0, raf = 0;
+    function reticleLoop() {
+      rx(hx + (tx - hx) * 0.18);
+      ry(hy + (ty - hy) * 0.18);
+      rw(hx + (tw - hx) * 0.18);
+      rh(hy + (th - hy) * 0.18);
+      hx = hx + (tx - hx) * 0.18;
+      hy = hy + (ty - hy) * 0.18;
+      raf = requestAnimationFrame(reticleLoop);
+    }
+    reticleLoop();
+
+    function lock(el) {
+      var r = el.getBoundingClientRect();
+      tx = r.left; ty = r.top; tw = r.width; th = r.height;
+      ret.classList.add('is-active');
+      document.body.classList.add('is-locked');
+    }
+    function unlock() {
+      tx = hx; ty = hy; tw = 0; th = 0;
+      ret.classList.remove('is-active');
+      document.body.classList.remove('is-locked');
+    }
+
     window.addEventListener('mousemove', function (e) {
-      dx(e.clientX); dy(e.clientY); rx(e.clientX); ry(e.clientY);
+      lx(e.clientX); ly(e.clientY); mx(e.clientX); my(e.clientY);
     }, { passive: true });
+
     document.querySelectorAll('a, button, .f-row, .step').forEach(function (el) {
-      el.addEventListener('mouseenter', function () { ring.classList.add('is-active'); });
-      el.addEventListener('mouseleave', function () { ring.classList.remove('is-active'); });
+      el.addEventListener('mouseenter', function () { lock(el); });
+      el.addEventListener('mouseleave', unlock);
     });
   }
 
@@ -235,6 +273,78 @@
     });
   }
 
+  /* ── Edge scroll rail — the custom minimal scrollbar ──────
+     2px track with a 48px amber thumb: wakes on scroll, fades
+     when idle, widens on hover, and is draggable to scrub.
+     Desktop (pointer:fine) only — touch keeps native overlays. */
+  function initScrollRail() {
+    if (!finePointer) return;
+    var rail = document.querySelector('.scroll-rail');
+    var thumb = document.querySelector('.scroll-thumb');
+    if (!rail || !thumb) return;
+
+    var max = 1, trackH = 0, y = 0;
+    function measure() {
+      var docH = document.documentElement.scrollHeight - window.innerHeight;
+      max = docH > 0 ? docH : 1;
+      trackH = rail.clientHeight - thumb.offsetHeight;
+    }
+    measure();
+
+    var hideTimer = 0;
+    function show() {
+      rail.classList.add('is-on');
+      clearTimeout(hideTimer);
+      hideTimer = setTimeout(function () { rail.classList.remove('is-on'); }, 900);
+    }
+    function update(scrollY) {
+      if (scrollY > max) measure(); /* doc grew and a re-measure was missed */
+      y = Math.min(Math.max(scrollY, 0), max);
+      thumb.style.transform = 'translateY(' + (y / max) * trackH + 'px)';
+      show();
+    }
+
+    /* Lenis drives wheel smoothing; a rAF poll catches every other
+       path — keyboard, anchors, find-in-page, coalesced events */
+    if (lenis) lenis.on('scroll', function (e) { update(e.scroll); });
+    (function poll() {
+      if (window.scrollY !== y) update(window.scrollY);
+      requestAnimationFrame(poll);
+    })();
+
+    /* drag the thumb to scrub the page */
+    var dragging = false, startY = 0, startScroll = 0;
+    thumb.addEventListener('pointerdown', function (e) {
+      dragging = true;
+      startY = e.clientY;
+      startScroll = y;
+      rail.classList.add('is-dragging');
+      thumb.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    thumb.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      var target = startScroll + ((e.clientY - startY) / trackH) * max;
+      if (lenis) lenis.scrollTo(target, { immediate: true });
+      else window.scrollTo(0, target);
+    });
+    function stopDrag(e) {
+      if (!dragging) return;
+      dragging = false;
+      rail.classList.remove('is-dragging');
+      try { thumb.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+    thumb.addEventListener('pointerup', stopDrag);
+    thumb.addEventListener('pointercancel', stopDrag);
+
+    window.addEventListener('resize', function () { measure(); update(y); });
+    /* content can grow after boot (reveals, fonts) — re-measure on any change */
+    if (window.ResizeObserver) new ResizeObserver(function () { measure(); update(y); }).observe(document.documentElement);
+    update(window.scrollY);
+    /* the custom rail is now the only scrollbar */
+    document.documentElement.classList.add('rv-rail');
+  }
+
   /* ── Parallax ───────────────────────────────────────────── */
   function initParallax() {
     if (!hasST || reduced) return;
@@ -379,13 +489,14 @@
   function boot() {
     initTheme();
     initRipple();
-    if (!hasGsap || !hasST || !hasSplit) { revealAllStatic(); initAnchors(); return; }
+    if (!hasGsap || !hasST || !hasSplit) { revealAllStatic(); initAnchors(); initScrollRail(); return; }
     window.gsap.registerPlugin(window.SplitText, window.ScrollTrigger);
 
     lenis = initLenis();
     initAnchors();
     initNav();
     initProgress();
+    initScrollRail();
     initParallax();
     initCounters();
     initMagnet();

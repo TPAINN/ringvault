@@ -68,9 +68,16 @@ body::before {
 
 ::selection { background: rgba(var(--primary-rgb), 0.3); color: #fff; }
 :focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; border-radius: 2px; }
-::-webkit-scrollbar { width: 10px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 0; border: 2px solid var(--bg); }
+/* ── Minimal scrollbar — native bar reduced to a hairline ─ */
+::-webkit-scrollbar { width: 2px; height: 2px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(var(--primary-rgb), 0.35); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: rgba(var(--primary-rgb), 0.75); }
+::-webkit-scrollbar-corner { background: transparent; }
+/* when the JS rail is live, the native bar disappears entirely —
+   the custom rail is the only scrollbar (touch keeps native overlays) */
+html.rv-rail { scrollbar-width: none; }
+html.rv-rail::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
 .container { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
 
@@ -79,25 +86,60 @@ body::before {
 /* ── Text Reveal 02 hidden-state ────────────────────────── */
 [data-reveal-02] { visibility: hidden; }
 
-/* ── Custom cursor (JS adds .has-cursor on pointer:fine) ── */
-body.has-cursor, body.has-cursor a, body.has-cursor button { cursor: none; }
-.cursor-dot, .cursor-ring {
+/* ── Custom cursor — viewfinder reticle (JS adds .has-cursor) ─
+   No dot, no blend blob. An optical instrument matching the
+   mono/datasheet language: full-viewport crosshair hairlines,
+   a diamond marker at the aim point, and a corner-bracket
+   reticle that locks onto the bounds of the hovered target. */
+body.has-cursor, body.has-cursor a, body.has-cursor button, body.has-cursor .scroll-rail { cursor: none; }
+
+.cursor-x, .cursor-y {
+  position: fixed;
+  z-index: 599;
+  pointer-events: none;
+  background: rgba(var(--primary-rgb), 0.14);
+}
+.cursor-x { top: 0; bottom: 0; width: 1px; will-change: transform; }
+.cursor-y { left: 0; right: 0; height: 1px; will-change: transform; }
+.cursor-x, .cursor-y { transition: opacity 0.25s var(--ease-out); }
+body.has-cursor.is-locked .cursor-x,
+body.has-cursor.is-locked .cursor-y { opacity: 0; }
+
+.cursor-mark, .cursor-reticle {
   position: fixed;
   top: 0; left: 0;
   pointer-events: none;
   z-index: 600;
-  border-radius: 50%;
   will-change: transform;
 }
-.cursor-dot { width: 6px; height: 6px; background: var(--primary); margin: -3px 0 0 -3px; }
-.cursor-ring {
-  width: 36px; height: 36px;
-  margin: -18px 0 0 -18px;
-  border: 1px solid rgba(255, 255, 255, 0.65);
-  mix-blend-mode: difference;
-  transition: width 0.25s var(--ease-out), height 0.25s var(--ease-out), margin 0.25s var(--ease-out);
+/* diamond marker — echoes the marquee separators */
+.cursor-mark {
+  width: 7px; height: 7px;
+  background: var(--primary);
+  transform: rotate(45deg);
 }
-.cursor-ring.is-active { width: 64px; height: 64px; margin: -32px 0 0 -32px; }
+/* corner-bracket reticle — grows to lock onto the hovered target */
+.cursor-reticle {
+  opacity: 0;
+  transition: opacity 0.2s var(--ease-out);
+}
+.cursor-reticle::before, .cursor-reticle::after,
+.cursor-reticle i::before, .cursor-reticle i::after {
+  content: '';
+  position: absolute;
+  width: 10px; height: 10px;
+  border: 1.5px solid var(--primary);
+  transition: width 0.28s var(--ease-out), height 0.28s var(--ease-out);
+}
+.cursor-reticle::before { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.cursor-reticle::after  { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+.cursor-reticle i::before { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+.cursor-reticle i::after  { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+.cursor-reticle.is-active { opacity: 1; }
+.cursor-reticle.is-active::before, .cursor-reticle.is-active::after,
+.cursor-reticle.is-active i::before, .cursor-reticle.is-active i::after {
+  width: 14px; height: 14px;
+}
 
 /* ── Scroll progress ────────────────────────────────────── */
 .scroll-progress {
@@ -109,6 +151,49 @@ body.has-cursor, body.has-cursor a, body.has-cursor button { cursor: none; }
   transform-origin: 0 50%;
   z-index: 300;
   pointer-events: none;
+}
+
+/* ── Edge scroll rail — the custom scrollbar ──────────────
+   2px track, 48px thumb; wakes on scroll, widens on hover,
+   draggable. Sits under the cursor layers (z 590 < 599). */
+.scroll-rail {
+  position: fixed;
+  top: var(--nav-h);
+  bottom: 24px;
+  right: 0;
+  width: 12px;
+  z-index: 590;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-out);
+}
+.scroll-rail.is-on,
+.scroll-rail:hover,
+.scroll-rail.is-dragging { opacity: 1; }
+.scroll-rail:hover,
+.scroll-rail.is-dragging { pointer-events: auto; }
+.scroll-rail::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  right: 5px;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.07);
+}
+.scroll-thumb {
+  position: absolute;
+  top: 0;
+  right: 5px;
+  width: 2px;
+  height: 48px;
+  background: rgba(var(--primary-rgb), 0.55);
+  will-change: transform;
+}
+.scroll-rail:hover .scroll-thumb,
+.scroll-rail.is-dragging .scroll-thumb {
+  right: 4px;
+  width: 4px;
+  background: var(--primary);
 }
 
 /* ── Nav — hairline bar, mono indices, no pill ──────────── */
@@ -1084,5 +1169,5 @@ footer {
   .marquee-track { animation: none !important; }
   html { scroll-behavior: auto !important; }
   body.has-cursor, body.has-cursor a, body.has-cursor button { cursor: auto !important; }
-  .cursor-dot, .cursor-ring { display: none !important; }
+  .cursor-x, .cursor-y, .cursor-mark, .cursor-reticle { display: none !important; }
 }
