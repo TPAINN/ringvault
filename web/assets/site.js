@@ -44,16 +44,33 @@
     });
   }
 
-  /* ── Custom cursor — viewfinder reticle (pointer:fine, motion-safe) ──
-     No dot-and-ring blob: full-viewport crosshair hairlines, a diamond
-     marker at the aim point, and corner brackets that snap out to lock
-     onto the bounds of whatever you hover — an instrument, not an ornament.
+  /* ── Crosshair targeting system — single controller, one active target ──
 
-     Detection: one delegated mousemove. event.target.closest() picks the
-     deepest interactive element (a, button, .f-row, .step, [data-lock]),
-     so the reticle snaps from a whole row to the button inside it — and
-     nested locks morph between rects with the area tint as the tell.
-     Locks re-measure on resize/scroll so they never go stale. */
+     Architecture (root-cause fixes, not cosmetic):
+     · ONE overlay for the whole page (.cursor-reticle), one state object:
+       cur (active target), t* (target rect), h* (animated head).
+     · Coordinate space: the overlay is position:fixed and every rect comes
+       from getBoundingClientRect() — viewport space only, never mixed with
+       document space, so scrolling/zoom/nested transforms need no math.
+     · PAD: uniform outward offset on all four sides, derived from the same
+       rect — corners can never drift independently.
+     · First lock SNAPS to geometry (no fly-in from a 0,0-initialized head —
+       the cause of "frames appearing from the wrong place"); later locks
+       morph continuously. A→B directly = smooth interpolation; collapsed
+       idle → next lock = clean fade-in reveal. Exit collapses at the pointer
+       while opacity fades — complementary, DOM never removed mid-flight.
+     · Detection: one delegated mousemove, deduped per hit element;
+       closest(LOCK_SEL) resolves the deepest interactive ancestor, so
+       moving across a button's icon/spans never flickers the frame.
+     · No completion callbacks exist → rapid A→B→C→out races can't hide or
+       move the frame; newest target state always wins.
+     · Scroll/resize/font-load re-measure the active target via a
+       rAF-deduped scheduler (one gBCR per frame, zero thrash).
+     · The rAF loop suspends when idle & settled — no permanent ticker.
+     · Keyboard parity: :focus-visible locks the frame too (lockSrc guards
+       so focus never fights the pointer).
+     · Reduced-motion & touch: the whole system stays off (CSS focus rings
+       remain the independent, accessible indicator). */
   function initCursor() {
     if (!finePointer || reduced) return;
     var xline = document.querySelector('.cursor-x');
@@ -68,55 +85,97 @@
     var ly = window.gsap.quickTo(yline, 'y', { duration: 0.55, ease: 'power2.out' });
     var mx = window.gsap.quickTo(mark, 'x', { duration: 0.12, ease: 'power2.out' });
     var my = window.gsap.quickTo(mark, 'y', { duration: 0.12, ease: 'power2.out' });
-    /* reticle is a strict follower — lerped bounds, no easing of its own */
+    /* the frame is a strict compositor follower — transform + size only */
     var rx = window.gsap.quickSetter(ret, 'x', 'px');
     var ry = window.gsap.quickSetter(ret, 'y', 'px');
     var rw = window.gsap.quickSetter(ret, 'width', 'px');
     var rh = window.gsap.quickSetter(ret, 'height', 'px');
 
-    var hx = 0, hy = 0, tx = 0, ty = 0, tw = 0, th = 0;
-    function reticleLoop() {
-      rx(hx + (tx - hx) * 0.22);
-      ry(hy + (ty - hy) * 0.22);
-      rw(hx + (tw - hx) * 0.22);
-      rh(hy + (th - hy) * 0.22);
-      hx = hx + (tx - hx) * 0.22;
-      hy = hy + (ty - hy) * 0.22;
-      requestAnimationFrame(reticleLoop);
-    }
-    reticleLoop();
-
     var LOCK_SEL = 'a, button, .f-row, .step, [data-lock]';
-    var cur = null; /* currently locked element */
+    var PAD = 5;                 /* uniform outward offset, all corners */
 
-    function lock(el) {
-      cur = el;
-      var r = el.getBoundingClientRect();
-      tx = r.left; ty = r.top; tw = r.width; th = r.height;
+    var tx = 0, ty = 0, tw = 0, th = 0;   /* target rect (viewport space) */
+    var hx = 0, hy = 0, hw = 0, hh = 0;   /* animated head */
+    var cur = null, lockSrc = null, lastHit = null;
+    var started = false, rafId = 0, relockReq = 0;
+
+    function apply() { rx(hx); ry(hy); rw(hw); rh(hh); }
+
+    function loop() {
+      /* long jumps (A→B far apart) close faster; nearby ones glide */
+      var k = Math.abs(tx - hx) + Math.abs(ty - hy) > 480 ? 0.34 : 0.22;
+      hx += (tx - hx) * k;  hy += (ty - hy) * k;
+      hw += (tw - hw) * k;  hh += (th - hh) * k;
+      apply();
+      if (!active && Math.abs(tx - hx) < 0.5 && Math.abs(ty - hy) < 0.5 && hw < 0.5 && hh < 0.5) {
+        hx = tx; hy = ty; hw = tw; hh = th; apply();
+        started = false;            /* settled & hidden — suspend the loop */
+        rafId = 0; return;
+      }
+      rafId = requestAnimationFrame(loop);
+    }
+    function ensureLoop() { if (!rafId) rafId = requestAnimationFrame(loop); }
+
+    function lock(el, src) {
+      var wasStarted = started;
+      cur = el; lockSrc = src; active = true;
+      var r = el.getBoundingClientRect();      /* real rendered geometry */
+      tx = r.left - PAD; ty = r.top - PAD;
+      tw = r.width + PAD * 2; th = r.height + PAD * 2;
+      if (!wasStarted) {                       /* first reveal: no fly-in */
+        hx = tx; hy = ty; hw = tw; hh = th;
+        started = true; apply();
+      }
       ret.style.setProperty('--arm', (r.width > 420 ? 16 : r.width > 90 ? 12 : 9) + 'px');
       ret.classList.add('is-active');
       document.body.classList.add('is-locked');
+      ensureLoop();
     }
-    function unlock() {
-      cur = null;
-      tx = hx; ty = hy; tw = 0; th = 0;
+
+    var active = false;
+    function unlock(src) {
+      if (src && lockSrc && src !== lockSrc) return;  /* focus won't fight pointer */
+      cur = null; lockSrc = null; active = false; lastHit = null;
+      tx = hx; ty = hy; tw = 0; th = 0;        /* collapse at the pointer */
       ret.classList.remove('is-active');
       document.body.classList.remove('is-locked');
+      ensureLoop();
     }
 
-    /* delegated detection — no per-element listeners, so dynamically
-       rendered nodes (feature media, marquee links) are covered too */
+    /* geometry shifted under an active lock — re-measure, rAF-deduped */
+    function scheduleRelock() {
+      if (relockReq || !cur) return;
+      relockReq = requestAnimationFrame(function () {
+        relockReq = 0;
+        if (cur) lock(cur, lockSrc);
+      });
+    }
+
+    /* delegated detection — deduped per hit element, so children (icon,
+       spans) of a target never retrigger; closest() keeps it one target */
     window.addEventListener('mousemove', function (e) {
       lx(e.clientX); ly(e.clientY); mx(e.clientX); my(e.clientY);
+      if (e.target === lastHit) return;
+      lastHit = e.target;
       var el = e.target.closest ? e.target.closest(LOCK_SEL) : null;
       if (el === cur) return;
-      if (el) lock(el); else unlock();
+      if (el) lock(el, 'pointer'); else unlock();
     }, { passive: true });
 
-    /* keep the lock honest when geometry shifts underneath it */
-    window.addEventListener('resize', function () { if (cur) lock(cur); });
-    if (lenis) lenis.on('scroll', function () { if (cur) lock(cur); });
-    else window.addEventListener('scroll', function () { if (cur) lock(cur); }, { passive: true });
+    window.addEventListener('scroll', scheduleRelock, { passive: true });
+    window.addEventListener('resize', scheduleRelock);
+    if (lenis) lenis.on('scroll', scheduleRelock);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(scheduleRelock);
+
+    /* keyboard parity — the frame also locks on :focus-visible */
+    window.addEventListener('focusin', function (e) {
+      var el = e.target.closest ? e.target.closest(LOCK_SEL) : null;
+      if (!el) return;
+      var visible = false;
+      try { visible = el.matches(':focus-visible'); } catch (err) {}
+      if (visible) lock(el, 'focus');
+    });
+    window.addEventListener('focusout', function () { if (lockSrc === 'focus') unlock(); });
   }
 
   /* ── Text Reveal 02 ───────────────────────────────────────
@@ -280,15 +339,6 @@
     else window.addEventListener('scroll', function () { onScroll(window.scrollY); }, { passive: true });
   }
 
-  /* ── Progress bar (compositor-only scaleX) ──────────────── */
-  function initProgress() {
-    if (!hasST) return;
-    window.gsap.to('.scroll-progress', {
-      scaleX: 1,
-      ease: 'none',
-      scrollTrigger: { start: 0, end: 'max', scrub: 0.3 }
-    });
-  }
 
   /* ── Edge scroll rail — the custom minimal scrollbar ──────
      2px track with a 48px amber thumb: wakes on scroll, fades
@@ -512,7 +562,6 @@
     lenis = initLenis();
     initAnchors();
     initNav();
-    initProgress();
     initScrollRail();
     initParallax();
     initCounters();
