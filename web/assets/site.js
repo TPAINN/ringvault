@@ -32,6 +32,7 @@
     if (meta) meta.setAttribute('content', t.primary);
     document.querySelectorAll('.theme-dot').forEach(function (d) {
       d.classList.toggle('active', d.dataset.theme === name);
+      d.setAttribute('aria-checked', d.dataset.theme === name ? 'true' : 'false');
     });
     try { localStorage.setItem('rv-theme', name); } catch (e) {}
   }
@@ -39,9 +40,24 @@
     var saved = null;
     try { saved = localStorage.getItem('rv-theme'); } catch (e) {}
     if (saved && THEMES[saved]) applyTheme(saved);
-    document.querySelectorAll('.theme-dot').forEach(function (dot) {
+    document.querySelectorAll('.theme-dot').forEach(function (dot, i) {
+      dot.setAttribute('role', 'radio');
+      dot.setAttribute('aria-checked', dot.classList.contains('active') ? 'true' : 'false');
+      if (i === 0 && !document.querySelector('.theme-dot.active')) dot.setAttribute('tabindex', '0');
       dot.addEventListener('click', function () { applyTheme(dot.dataset.theme); });
     });
+    var group = document.querySelector('.theme-switcher');
+    if (group) {
+      group.addEventListener('keydown', function (e) {
+        var dots = Array.prototype.slice.call(group.querySelectorAll('.theme-dot'));
+        var cur = dots.indexOf(document.activeElement);
+        if (cur < 0) return;
+        var next = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = dots[(cur + 1) % dots.length];
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = dots[(cur - 1 + dots.length) % dots.length];
+        if (next) { e.preventDefault(); next.focus(); applyTheme(next.dataset.theme); }
+      });
+    }
   }
 
   /* ── Crosshair targeting system — single controller, one active target ──

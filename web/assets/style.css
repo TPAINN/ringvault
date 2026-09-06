@@ -86,6 +86,23 @@ html.rv-rail::-webkit-scrollbar { display: none; width: 0; height: 0; }
 /* ── Text Reveal 02 hidden-state ────────────────────────── */
 [data-reveal-02] { visibility: hidden; }
 
+/* ── Skip link (keyboard a11y) ── */
+.skip {
+  position: fixed;
+  top: -60px;
+  left: 14px;
+  z-index: 700;
+  background: var(--primary);
+  color: #14120b;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: top 0.2s var(--ease-out);
+}
+.skip:focus { top: 12px; }
+
 /* ── Custom cursor — viewfinder reticle (JS adds .has-cursor) ─
    No dot, no blend blob. An optical instrument matching the
    mono/datasheet language: full-viewport crosshair hairlines,

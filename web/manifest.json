@@ -1,8 +1,8 @@
 {
   "name": "RingVault — Ringtones, Notifications & Alarms",
   "short_name": "RingVault",
-  "description": "Χιλιάδες δωρεάν, σύντομοι ήχοι για ringtone, notification & alarm. Preview, download, φτιάξε δικό σου.",
-  "lang": "el",
+  "description": "Thousands of free, short sounds for ringtone, notification & alarm. Preview, download, or make your own.",
+  "lang": "en",
   "start_url": "app.html",
   "scope": "./",
   "display": "standalone",
