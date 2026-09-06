@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="el">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RingVault — Ringtones, Notifications & Alarms</title>
+<meta name="description" content="Browse thousands of free ringtones, notification sounds and alarms. Preview instantly, download, or make your own — right in your browser.">
 <meta name="theme-color" content="#0f0f1a">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -22,6 +23,8 @@
     --hairline:rgba(255,255,255,.08); --ease-out:cubic-bezier(.22,1,.36,1);
   }
   *{margin:0;padding:0;box-sizing:border-box}
+  .skip{position:fixed;top:-60px;left:14px;z-index:100;background:var(--primary);color:var(--on-primary);padding:10px 16px;border-radius:8px;font-weight:700;transition:top .2s}
+  .skip:focus{top:12px}
   body{background:var(--bg);color:var(--text);font-family:'Outfit','Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;padding-bottom:90px}
   /* dot grid fading below the header — texture instead of flat black */
   body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
@@ -60,6 +63,7 @@
   .controls{max-width:1080px;margin:0 auto;padding:14px 20px 4px;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
   .ctl-group{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
   .ctl-label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-right:2px}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
   .chip{background:var(--surface);border:1px solid var(--surface-2);color:var(--muted);padding:5px 12px;border-radius:8px;
     cursor:pointer;font-size:.78rem;transition:color .15s,border-color .15s}
   .chip:hover{color:var(--text);border-color:var(--surface-3)}
@@ -236,32 +240,34 @@
 </style>
 </head>
 <body>
+<a class="skip" href="#list">Skip to sounds</a>
 
 <header>
   <div class="hbar">
     <div class="logo" id="logoMark">Ring<span>Vault</span></div>
-    <div class="search"><input id="search" type="text" placeholder="Αναζήτηση ήχου..." autocomplete="off"><span class="kbd" aria-hidden="true">/</span></div>
-    <button class="btn-own" id="installBtn" style="display:none;background:var(--surface-2);color:var(--primary)">Εγκατάσταση</button>
-    <button class="btn-own" id="openAI" style="background:linear-gradient(135deg,#ce93d8,#ffb74d);color:#1b1b2f"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>AI ήχος</button>
-    <button class="btn-own" id="openOwn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/></svg>Δικό σου ringtone</button>
+    <div class="search"><label class="sr-only" for="search">Search sounds</label><input id="search" type="search" placeholder="Search sounds..." autocomplete="off"><span class="kbd" aria-hidden="true">/</span></div>
+  <button type="button" class="btn-own" id="installBtn" style="display:none;background:var(--surface-2);color:var(--primary)">Install</button>
+  <button type="button" class="btn-own" id="openAI" style="background:linear-gradient(135deg,#ce93d8,#ffb74d);color:#1b1b2f"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>AI Sound</button>
+  <button type="button" class="btn-own" id="openOwn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/></svg>Your ringtone</button>
   </div>
   <div class="tabs" id="tabs"></div>
   <div class="controls">
-    <div class="ctl-group">
-      <span class="ctl-label">Διάρκεια</span>
-      <span class="chip on" data-dur="0">Όλα</span>
-      <span class="chip" data-dur="5">≤5s</span>
-      <span class="chip" data-dur="10">≤10s</span>
-      <span class="chip" data-dur="20">≤20s</span>
-      <span class="chip" data-dur="30">≤30s</span>
+    <div class="ctl-group" role="group" aria-label="Duration filter">
+      <span class="ctl-label" id="durLabel">Duration</span>
+      <button type="button" class="chip on" data-dur="0" aria-pressed="true">All</button>
+      <button type="button" class="chip" data-dur="5" aria-pressed="false">≤5s</button>
+      <button type="button" class="chip" data-dur="10" aria-pressed="false">≤10s</button>
+      <button type="button" class="chip" data-dur="20" aria-pressed="false">≤20s</button>
+      <button type="button" class="chip" data-dur="30" aria-pressed="false">≤30s</button>
     </div>
     <div class="ctl-group">
-      <span class="ctl-label">Ταξινόμηση</span>
+      <span class="ctl-label">Sort</span>
+      <label class="sr-only" for="sort">Sort</label>
       <select class="sort" id="sort">
-        <option value="short">Συντομότερα πρώτα</option>
-        <option value="new">Νεότερα</option>
-        <option value="popular">Δημοφιλή</option>
-        <option value="random">Τυχαία</option>
+        <option value="short">Shortest first</option>
+        <option value="new">Newest</option>
+        <option value="popular">Popular</option>
+        <option value="random">Random</option>
       </select>
     </div>
   </div>
@@ -271,8 +277,9 @@
 <div class="meta-row"><span id="count" aria-live="polite">—</span><span id="srcnote"></span></div>
 
 <main>
+  <h1 class="sr-only">RingVault — Sound library</h1>
   <div id="list" class="list"></div>
-  <div id="status" class="loading">Φόρτωση catalog...</div>
+  <div id="status" class="loading">Loading catalog...</div>
 </main>
 
 <!-- now playing -->
@@ -287,28 +294,27 @@
 <!-- make your own -->
 <div class="modal" id="ownModal">
   <div class="mbox">
-    <h2>Φτιάξε <span>δικό σου</span> ringtone</h2>
-    <p class="hint">Διάλεξε ένα τραγούδι/ήχο από τη συσκευή σου, κόψε το κομμάτι που θες (π.χ. το refren) και κατέβασέ το ως clip.
-      Όλα γίνονται <strong>τοπικά στον browser</strong> — τίποτα δεν ανεβαίνει πουθενά.</p>
-    <div class="drop" id="drop">Κάνε κλικ ή σύρε εδώ ένα αρχείο ήχου (mp3, wav, m4a...)</div>
+    <h2>Make <span>your own</span> ringtone</h2>
+    <p class="hint">Pick a song or sound from your device, cut the part you want (e.g. the chorus) and download it as a clip.
+      Everything happens <strong>locally in your browser</strong> — nothing is uploaded anywhere.</p>        <div class="drop" id="drop" role="button" tabindex="0" aria-label="Choose an audio file">Click or drop an audio file here (mp3, wav, m4a...)</div>
     <input type="file" id="file" accept="audio/*" hidden>
     <div class="trim" id="trim">
       <div class="fname" id="fname"></div>
       <div class="wave"><canvas id="wave"></canvas><div class="sel" id="sel"></div></div>
       <div class="slider-row">
-        <label>Αρχή <span id="startLbl">0.0s</span></label>
+        <label>Start <span id="startLbl">0.0s</span></label>
         <input type="range" id="start" min="0" max="100" value="0" step="0.1">
       </div>
       <div class="slider-row">
-        <label>Διάρκεια clip <span id="lenLbl">20s</span></label>
+        <label>Clip length <span id="lenLbl">20s</span></label>
         <input type="range" id="len" min="3" max="40" value="20" step="1">
       </div>
       <div class="trim-actions">
-        <button class="mbtn mbtn-prev" id="preview">Άκου το clip</button>
-        <button class="mbtn mbtn-dl" id="download">Κατέβασε ringtone (.wav)</button>
-        <button class="mbtn mbtn-x" id="closeOwn">Κλείσιμο</button>
+        <button class="mbtn mbtn-prev" id="preview">Preview clip</button>
+        <button class="mbtn mbtn-dl" id="download">Download ringtone (.wav)</button>
+        <button class="mbtn mbtn-x" id="closeOwn">Close</button>
       </div>
-      <p class="hint" style="margin-top:12px;margin-bottom:0">Στο κινητό: άνοιξε το αρχείο → <strong>Set as ringtone</strong>, ή βάλ' το στον φάκελο Ringtones.</p>
+      <p class="hint" style="margin-top:12px;margin-bottom:0">On mobile: open the file → <strong>Set as ringtone</strong>, or place it in your Ringtones folder.</p>
     </div>
   </div>
 </div>
@@ -316,33 +322,33 @@
 <!-- AI generate -->
 <div class="modal" id="aiModal">
   <div class="mbox">
-    <h2>Φτιάξε ήχο με <span>AI</span></h2>
-    <p class="hint">Περίγραψε τον ήχο που θες — η AI (ElevenLabs) φτιάχνει έναν <strong>μοναδικό, royalty-free</strong> ήχο. Δικός σου τον κατεβάζεις & τον βάζεις ringtone.</p>
-    <div class="ai-warn"><b>100% δωρεάν με το ElevenLabs free tier</b> (~10.000 credits/μήνα). <b>Χωρίς κάρτα = αδύνατο να χρεωθείς</b> — όταν τελειώσουν τα free credits απλά σταματάει, δεν χρεώνεσαι ποτέ αυτόματα. Key: elevenlabs.io → Profile → API Keys (αποθηκεύεται μόνο τοπικά). Θες <b>μηδέν API</b>; χρησιμοποίησε το «Δικό σου ringtone» (trim) — εντελώς free.</div>
+    <h2>Generate sound with <span>AI</span></h2>
+    <p class="hint">Describe the sound you want — the AI (ElevenLabs) creates a <strong>unique, royalty-free</strong> sound. Download it and set it as your ringtone.</p>
+    <div class="ai-warn"><b>100% free with the ElevenLabs free tier</b> (~10,000 credits/month). <b>No card = impossible to be charged</b> — when the free credits run out it simply stops, you are never billed automatically. Key: elevenlabs.io → Profile → API Keys (stored locally only). Want <b>zero API</b>? Use "Your ringtone" (trim) — completely free.</div>
     <input type="password" id="aiKey" class="ai-in" placeholder="ElevenLabs API key (sk_...)" autocomplete="off">
-    <textarea id="aiPrompt" class="ai-in" placeholder="π.χ. soft warm marimba notification, two gentle ascending notes, clean"></textarea>
-    <div class="slider-row"><label>Διάρκεια <span id="aiDurLbl">5s</span></label>
+    <textarea id="aiPrompt" class="ai-in" placeholder="e.g. soft warm marimba notification, two gentle ascending notes, clean"></textarea>
+    <div class="slider-row"><label>Length <span id="aiDurLbl">5s</span></label>
       <input type="range" id="aiDur" min="1" max="15" value="5" step="0.5"></div>
     <div class="trim-actions">
       <button class="mbtn mbtn-dl" id="aiGen">Generate</button>
-      <button class="mbtn mbtn-x" id="aiClose">Κλείσιμο</button>
+      <button class="mbtn mbtn-x" id="aiClose">Close</button>
     </div>
     <div class="ai-status" id="aiStatus"></div>
     <div class="ai-out" id="aiOut">
       <audio id="aiAudio" controls></audio>
-      <button class="mbtn mbtn-dl" id="aiDl" style="width:100%">Κατέβασε ringtone (.mp3)</button>
+      <button class="mbtn mbtn-dl" id="aiDl" style="width:100%">Download ringtone (.mp3)</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <audio id="audio" preload="none"></audio>
 
 <!-- catalog loaded as a JS var for file:// support; falls back to fetch -->
 <script defer src="catalog.js"></script>
-<script defer src="assets/app.js?v=6"></script>
-<script defer src="assets/rail.js?v=4"></script>
+<script defer src="assets/app.js?v=10"></script>
+<script defer src="assets/rail.js?v=5"></script>
 
 
 

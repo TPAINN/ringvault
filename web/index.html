@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Outfit:wght@600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/style.css?v=11">
+<link rel="stylesheet" href="/assets/style.css?v=12">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -43,6 +43,8 @@
 <noscript><style>[data-reveal-02]{visibility:visible}.reveal{opacity:1;transform:none}</style></noscript>
 </head>
 <body>
+
+<a class="skip" href="#main">Skip to content</a>
 
 <div class="grain" aria-hidden="true"></div>
 <div class="cursor-x" aria-hidden="true"></div>
@@ -70,7 +72,7 @@
   </div>
 </header>
 
-<main>
+<main id="main">
   <!-- ═══ HERO ═══ -->
   <section class="hero">
     <div class="container hero-in">
@@ -112,12 +114,12 @@
   </section>
 
   <!-- ═══ MARQUEE ═══ -->
-  <div class="marquee" aria-hidden="true">
-    <div class="marquee-track">
-      <div class="marquee-group">
+<div class="marquee">
+  <div class="marquee-track">
+      <div class="marquee-group" aria-hidden="true">
         <span>FREESOUND <i></i> CC0</span><span>PIXABAY <i></i> ROYALTY-FREE</span><span>MIXKIT <i></i> FREE LICENSE</span><span>JAMENDO <i></i> CC-BY</span><span>3,000+ SOUNDS <i></i></span><span>NO ADS <i></i></span><span>NO TRACKING <i></i></span><span>WEEKLY DROPS <i></i> SUNDAY 04:00 UTC</span><span>APK 1.7 MB <i></i></span><span>ANDROID 8.0+ <i></i></span>
       </div>
-      <div class="marquee-group">
+      <div class="marquee-group" aria-hidden="true">
         <span>FREESOUND <i></i> CC0</span><span>PIXABAY <i></i> ROYALTY-FREE</span><span>MIXKIT <i></i> FREE LICENSE</span><span>JAMENDO <i></i> CC-BY</span><span>3,000+ SOUNDS <i></i></span><span>NO ADS <i></i></span><span>NO TRACKING <i></i></span><span>WEEKLY DROPS <i></i> SUNDAY 04:00 UTC</span><span>APK 1.7 MB <i></i></span><span>ANDROID 8.0+ <i></i></span>
       </div>
     </div>
@@ -443,16 +445,16 @@
 </footer>
 
 <div class="theme-switcher" role="radiogroup" aria-label="Color theme">
-  <button class="theme-dot active" data-theme="amber" aria-label="Amber theme"></button>
-  <button class="theme-dot" data-theme="blue" aria-label="Blue theme"></button>
-  <button class="theme-dot" data-theme="green" aria-label="Green theme"></button>
-  <button class="theme-dot" data-theme="rose" aria-label="Rose theme"></button>
+  <button type="button" class="theme-dot active" data-theme="amber" aria-label="Amber theme" aria-checked="true"></button>
+  <button type="button" class="theme-dot" data-theme="blue" aria-label="Blue theme" aria-checked="false"></button>
+  <button type="button" class="theme-dot" data-theme="green" aria-label="Green theme" aria-checked="false"></button>
+  <button type="button" class="theme-dot" data-theme="rose" aria-label="Rose theme" aria-checked="false"></button>
 </div>
 
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.20/dist/lenis.min.js"></script>
-<script defer src="/assets/site.js?v=12"></script>
+<script defer src="/assets/site.js?v=13"></script>
 </body>
 </html>

@@ -24,6 +24,29 @@ var ICONS = {
 function icon(name) { return ICONS[name] || ''; }
 function setIcon(el, name) { if (el) el.innerHTML = icon(name); }
 
+/* ---------- accessible modal helpers (shared by trim + AI modules) ---------- */
+function rvSetupModal(m){
+  if(!m) return;
+  m.setAttribute('role','dialog'); m.setAttribute('aria-modal','true'); m.setAttribute('aria-hidden','true');
+  var h=m.querySelector('h2');
+  if(h){ if(!h.id) h.id='rv-dlg-'+Math.random().toString(36).slice(2,8); m.setAttribute('aria-labelledby',h.id); }
+}
+function rvOpenModal(m){
+  if(!m) return;
+  m.__lastFocus=document.activeElement;
+  m.classList.add('show'); m.setAttribute('aria-hidden','false');
+  var cands=m.querySelectorAll('button, input, textarea, select, [tabindex]');
+  for(var i=0;i<cands.length;i++){ if(cands[i].offsetParent!==null){ cands[i].focus(); break; } }
+}
+function rvCloseModal(m){
+  if(!m) return;
+  m.classList.remove('show'); m.setAttribute('aria-hidden','true');
+  if(m.__lastFocus&&m.__lastFocus.focus) m.__lastFocus.focus();
+}
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){ Array.prototype.forEach.call(document.querySelectorAll('.modal.show'),function(m){ if(m.__rvEscapeClose) m.__rvEscapeClose(); }); }
+});
+
 
 (function(){
   'use strict';
@@ -44,7 +67,7 @@ function setIcon(el, name) { if (el) el.innerHTML = icon(name); }
   /* ---------- load ---------- */
   function boot(data){
     CATALOG = (data||[]).filter(function(s){ return s && s.url && s.durationSec; });
-    if(!CATALOG.length){ document.getElementById('status').textContent='Άδειο catalog. Τρέξε: node scripts/harvest-web.js'; return; }
+    if(!CATALOG.length){ document.getElementById('status').textContent='Empty catalog. Run: node scripts/harvest-web.js'; return; }
     document.getElementById('status').style.display='none';
     buildTabs(); render();
     /* entrance animation done (or never ran) — force final state */
@@ -54,7 +77,7 @@ function setIcon(el, name) { if (el) el.innerHTML = icon(name); }
     if(window.RINGVAULT_CATALOG){ boot(window.RINGVAULT_CATALOG); return; }
     fetch('catalog.json').then(function(r){return r.json();}).then(boot).catch(function(){
       var s=document.getElementById('status');
-      if(s){ s.style.display=''; s.innerHTML='Σφάλμα φόρτωσης. Ανανέωσε.'; }
+      if(s){ s.style.display=''; s.innerHTML='Failed to load. Refresh the page.'; }
     });
   }
   if(document.readyState==='loading'){
@@ -62,17 +85,20 @@ function setIcon(el, name) { if (el) el.innerHTML = icon(name); }
   } else { setTimeout(tryBoot, 0); }  /* deferred script: let the rest of this IIFE finish first */
 
   /* ---------- tabs ---------- */
-  var LABELS = { ringtone:'Ringtones', notification:'Notifications', alarm:'Alarms', fav:'Αγαπημένα' };
+  var LABELS = { ringtone:'Ringtones', notification:'Notifications', alarm:'Alarms', fav:'Favorites' };
   function buildTabs(){
     var counts = { ringtone:0, notification:0, alarm:0 };
     CATALOG.forEach(function(s){ if(counts[s.category]!=null) counts[s.category]++; });
     counts.fav = FAV.size;
-    var el = document.getElementById('tabs'); el.innerHTML='';
+    var el = document.getElementById('tabs'); el.innerHTML=''; el.setAttribute('role','tablist'); el.setAttribute('aria-label','Sound categories');
     ['ringtone','notification','alarm','fav'].forEach(function(c){
       var b=document.createElement('button');
+      b.type='button';
       b.className='tab'+(c===state.cat?' on':'');
+      b.setAttribute('role','tab');
+      b.setAttribute('aria-selected', c===state.cat?'true':'false');
       b.innerHTML=(c==='fav'?icon('heart')+' ':'')+LABELS[c]+' <small>'+counts[c]+'</small>';
-      b.onclick=function(){ state.cat=c; state.tag=''; document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');}); b.classList.add('on'); buildTags(); render(); };
+      b.onclick=function(){ state.cat=c; state.tag=''; document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');t.setAttribute('aria-selected','false');}); b.classList.add('on'); b.setAttribute('aria-selected','true'); buildTags(); render(); };
       el.appendChild(b);
     });
     buildTags();
@@ -87,10 +113,11 @@ function setIcon(el, name) { if (el) el.innerHTML = icon(name); }
     var top=Object.keys(freq).sort(function(a,b){return freq[b]-freq[a];}).slice(0,14);
     var bar=document.getElementById('tagbar'); bar.innerHTML='';
     if(!top.length) return;
-    var all=document.createElement('span'); all.className='chip'+(state.tag===''?' on':''); all.textContent='# όλα';
+    var all=document.createElement('button'); all.type='button'; all.className='chip'+(state.tag===''?' on':''); all.setAttribute('aria-pressed', state.tag==='' ? 'true':'false'); all.textContent='# all';
     all.onclick=function(){ state.tag=''; buildTags(); render(); }; bar.appendChild(all);
     top.forEach(function(t){
-      var c=document.createElement('span'); c.className='chip'+(state.tag===t?' on':'');
+      var c=document.createElement('button'); c.type='button'; c.className='chip'+(state.tag===t?' on':'');
+      c.setAttribute('aria-pressed', state.tag===t ? 'true':'false');
       c.innerHTML='#'+esc(t)+'<b>'+(freq[t]>999?(freq[t]/1000).toFixed(1)+'k':freq[t])+'</b>';
       c.onclick=function(){ state.tag=(state.tag===t?'':t); buildTags(); render(); }; bar.appendChild(c);
     });
@@ -112,12 +139,12 @@ function setIcon(el, name) { if (el) el.innerHTML = icon(name); }
 
   function render(){
     var items=currentItems();
-    document.getElementById('count').textContent=items.length+' ήχοι · '+LABELS[state.cat];
+    document.getElementById('count').textContent=items.length+' sounds · '+LABELS[state.cat];
     var list=document.getElementById('list'); list.innerHTML='';
     if(!items.length){
       list.innerHTML = state.cat==='fav'
-        ? '<div class="empty">'+icon('heartOff')+'Δεν έχεις αγαπημένα ακόμα.<br>Πάτα την καρδιά σε όποιον ήχο σ\' αρέσει.</div>'
-        : '<div class="empty">'+icon('music')+'Κανένας ήχος με αυτά τα φίλτρα.</div>';
+        ? '<div class="empty">'+icon('heartOff')+'No favorites yet.<br>Tap the heart on any sound you like.</div>'
+        : '<div class="empty">'+icon('music')+'No sounds match these filters.</div>';
       return;
     }
     var frag=document.createDocumentFragment();
@@ -130,14 +157,14 @@ function setIcon(el, name) { if (el) el.innerHTML = icon(name); }
     d.dataset.ix = String(i + 1).padStart(3, '0');
     var tags=(s.tags||[]).slice(0,3).map(function(t){return '<span class="ttag">'+esc(t)+'</span>';}).join('');
     d.innerHTML=
-      '<button class="play" aria-label="Play">'+(s.id===playingId?icon('pause'):icon('play'))+'</button>'+
+      '<button class="play" aria-label="'+(s.id===playingId?'Pause':'Play')+'">'+(s.id===playingId?icon('pause'):icon('play'))+'</button>'+
       '<div class="sinfo"><div class="stitle">'+esc(s.title)+'</div>'+
       '<div class="ssub"><span class="dur">'+s.durationSec+'s</span>'+tags+
       (s.author?'<span>· '+esc(s.author)+'</span>':'')+
       '<span class="eq" aria-hidden="true"><i></i><i></i><i></i></span></div>'+
       '<div class="prog"><i></i></div></div>'+
-      '<button class="fav'+(FAV.has(s.id)?' on':'')+'" title="Αγαπημένο">'+(FAV.has(s.id)?icon('heart'):icon('heartOff'))+'</button>'+
-      '<button class="dl" title="Κατέβασε">'+icon('download')+'</button>';
+      '<button class="fav'+(FAV.has(s.id)?' on':'')+'" aria-label="Favorite" aria-pressed="'+(FAV.has(s.id)?'true':'false')+'" title="Favorite">'+(FAV.has(s.id)?icon('heart'):icon('heartOff'))+'</button>'+
+      '<button class="dl" aria-label="Download" title="Download">'+icon('download')+'</button>';
     d.querySelector('.play').onclick=function(){ toggle(s); };
     d.querySelector('.dl').onclick=function(e){ e.stopPropagation(); dl(s); };
     d.querySelector('.fav').onclick=function(e){ e.stopPropagation(); toggleFav(s, d); };
@@ -156,6 +183,7 @@ function setIcon(el, name) { if (el) el.innerHTML = icon(name); }
       var on=c.dataset.id===playingId;
       c.classList.toggle('playing',on);
       c.querySelector('.play').innerHTML=on?icon('pause'):icon('play');
+      c.querySelector('.play').setAttribute('aria-label', on?'Pause':'Play');
       if(!on){ var bar=c.querySelector('.prog i'); if(bar) bar.style.width='0%'; }
     });
   }
@@ -178,6 +206,7 @@ function setIcon(el, name) { if (el) el.innerHTML = icon(name); }
   }
   function hideNP(){ document.getElementById('npbar').classList.remove('show'); }
   document.getElementById('npPlay').onclick=function(){ if(audio.paused) audio.play(); else audio.pause(); };
+  document.getElementById('npClose').setAttribute('aria-label','Stop and close');
   document.getElementById('npClose').onclick=function(){ audio.pause(); playingId=null; syncCards(); hideNP(); };
 
   var isAndroid=/android/i.test(navigator.userAgent);
@@ -189,25 +218,26 @@ function setIcon(el, name) { if (el) el.innerHTML = icon(name); }
   function dl(s){
     var a=document.createElement('a'); a.href=s.url; a.download=(s.title||'ringtone').replace(/[^\w\-]+/g,'_')+'.mp3';
     a.target='_blank'; a.rel='noopener'; document.body.appendChild(a); a.click(); a.remove();
-    if(isAndroid) toast(icon('download')+' Κατέβηκε. Άνοιξε το αρχείο → <b>'+icon('dots')+'</b> → <b>Use as ringtone</b><br>(ή βάλ\' το στον φάκελο <b>Ringtones</b>)', 5000);
-    else toast(icon('download')+' Κατέβηκε ο ήχος.');
+    if(isAndroid) toast(icon('download')+' Downloaded. Open the file → <b>'+icon('dots')+'</b> → <b>Use as ringtone</b><br>(or move it to your <b>Ringtones</b> folder)', 5000);
+    else toast(icon('download')+' Sound downloaded.');
   }
 
   function toggleFav(s, cardEl){
     if(FAV.has(s.id)) FAV.delete(s.id); else FAV.add(s.id);
     saveFav();
-    // update the fav tab counter
+    // update the fav tab counter (keeps icon + count format in sync with buildTabs)
     var favTab=document.querySelectorAll('.tab')[3];
-    if(favTab) favTab.innerHTML=LABELS.fav+' <small>('+FAV.size+')</small>';
+    if(favTab) favTab.innerHTML=icon('heart')+' '+LABELS.fav+' <small>'+FAV.size+'</small>';
     if(state.cat==='fav'){ render(); return; }          // viewing favorites → drop removed one
     var btn=cardEl.querySelector('.fav');
     var on=FAV.has(s.id); btn.classList.toggle('on',on); btn.innerHTML=on?icon('heart'):icon('heartOff');
+    btn.setAttribute('aria-pressed', on?'true':'false');
   }
 
   /* ---------- controls ---------- */
   document.querySelectorAll('[data-dur]').forEach(function(ch){
-    ch.onclick=function(){ document.querySelectorAll('[data-dur]').forEach(function(x){x.classList.remove('on');});
-      ch.classList.add('on'); state.dur=parseInt(ch.dataset.dur,10); render(); };
+    ch.onclick=function(){ document.querySelectorAll('[data-dur]').forEach(function(x){x.classList.remove('on');x.setAttribute('aria-pressed','false');});
+      ch.classList.add('on'); ch.setAttribute('aria-pressed','true'); state.dur=parseInt(ch.dataset.dur,10); render(); };
   });
   document.getElementById('sort').onchange=function(e){ state.sort=e.target.value; render(); };
   var st;
@@ -239,13 +269,16 @@ setIcon(document.getElementById('aiOut') && document.getElementById('aiOut').que
 /* ================= MAKE YOUR OWN (trim local file -> WAV) ================= */
   var ac, decoded=null;
   var modal=document.getElementById('ownModal');
-  document.getElementById('openOwn').onclick=function(){ modal.classList.add('show'); };
+  rvSetupModal(modal); modal.__rvEscapeClose=function(){ closeOwn(); };
+  document.getElementById('openOwn').onclick=function(){ rvOpenModal(modal); };
   document.getElementById('closeOwn').onclick=closeOwn;
-  function closeOwn(){ modal.classList.remove('show'); if(previewSrc){try{previewSrc.stop();}catch(e){}} }
+  function closeOwn(){ rvCloseModal(modal); if(previewSrc){try{previewSrc.stop();}catch(e){}} }
   modal.addEventListener('click',function(e){ if(e.target===modal) closeOwn(); });
 
   var drop=document.getElementById('drop'), fileInput=document.getElementById('file');
+  drop.setAttribute('role','button'); drop.setAttribute('tabindex','0');
   drop.onclick=function(){ fileInput.click(); };
+  drop.onkeydown=function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fileInput.click(); } };
   drop.ondragover=function(e){ e.preventDefault(); drop.style.borderColor='var(--primary)'; };
   drop.ondragleave=function(){ drop.style.borderColor=''; };
   drop.ondrop=function(e){ e.preventDefault(); drop.style.borderColor=''; if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); };
@@ -264,7 +297,7 @@ setIcon(document.getElementById('aiOut') && document.getElementById('aiOut').que
         startEl.max=Math.max(0,buf.duration-1).toFixed(1);
         startEl.value=0;
         drawWave(buf); updateSel();
-      }).catch(function(){ document.getElementById('fname').textContent=icon('alert')+' Δεν διαβάστηκε το αρχείο (δοκίμασε mp3/wav).'; });
+      }).catch(function(){ document.getElementById('fname').textContent=icon('alert')+' Could not read the file (try mp3/wav).'; });
     };
     reader.readAsArrayBuffer(file);
   }
@@ -357,6 +390,7 @@ setIcon(document.getElementById('aiOut') && document.getElementById('aiOut').que
 /* AI sound generator — ElevenLabs sound-generation, bring-your-own-key (CORS allowed) */
 (function(){
   var modal=document.getElementById('aiModal');
+  rvSetupModal(modal); modal.__rvEscapeClose=function(){ close(); };
   var keyEl=document.getElementById('aiKey'), promptEl=document.getElementById('aiPrompt');
   var durEl=document.getElementById('aiDur'), durLbl=document.getElementById('aiDurLbl');
   var statusEl=document.getElementById('aiStatus'), out=document.getElementById('aiOut');
@@ -366,18 +400,18 @@ setIcon(document.getElementById('aiOut') && document.getElementById('aiOut').que
   try{ var k=localStorage.getItem('rv_eleven_key'); if(k) keyEl.value=k; }catch(e){}
   durEl.oninput=function(){ durLbl.textContent=durEl.value+'s'; };
 
-  document.getElementById('openAI').onclick=function(){ modal.classList.add('show'); };
+  document.getElementById('openAI').onclick=function(){ rvOpenModal(modal); };
   document.getElementById('aiClose').onclick=close;
   modal.addEventListener('click',function(e){ if(e.target===modal) close(); });
-  function close(){ modal.classList.remove('show'); audio.pause(); }
+  function close(){ rvCloseModal(modal); audio.pause(); }
   function st(m,e){ statusEl.textContent=m; statusEl.className='ai-status'+(e?' err':''); }
 
   genBtn.onclick=function(){
     var key=keyEl.value.trim(), prompt=promptEl.value.trim();
-    if(!key){ st('Βάλε ElevenLabs API key.',true); return; }
-    if(!prompt){ st('Γράψε περιγραφή ήχου.',true); return; }
+    if(!key){ st('Enter your ElevenLabs API key.',true); return; }
+    if(!prompt){ st('Describe the sound.',true); return; }
     try{ localStorage.setItem('rv_eleven_key',key); }catch(e){}
-    genBtn.disabled=true; out.classList.remove('show'); st(icon('clock')+' Δημιουργία... (~10-20s)');
+    genBtn.disabled=true; out.classList.remove('show'); st(icon('clock')+' Generating... (~10-20s)');
     fetch('https://api.elevenlabs.io/v1/sound-generation',{
       method:'POST',
       headers:{ 'xi-api-key':key, 'Content-Type':'application/json' },
@@ -391,7 +425,7 @@ setIcon(document.getElementById('aiOut') && document.getElementById('aiOut').que
     }).then(function(blob){
       if(lastUrl) URL.revokeObjectURL(lastUrl);
       lastUrl=URL.createObjectURL(blob);
-      audio.src=lastUrl; out.classList.add('show'); st(icon('check')+' Έτοιμο!'); genBtn.disabled=false;
+      audio.src=lastUrl; out.classList.add('show'); st(icon('check')+' Done!'); genBtn.disabled=false;
       audio.play().catch(function(){});
     }).catch(function(err){
       genBtn.disabled=false;
