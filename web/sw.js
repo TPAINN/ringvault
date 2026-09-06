@@ -1,7 +1,7 @@
 // RingVault service worker — offline app shell + catalog.
 // Cross-origin audio (Mixkit/Commons) is left to the browser (not pre-cached: 2200+ files).
-const CACHE = 'ringvault-v4';
-const SHELL = ['app.html', 'catalog.js', 'catalog.json', 'manifest.json', 'icon.svg', 'icon-maskable.svg'];
+const CACHE = 'ringvault-v5';
+const SHELL = ['app.html', 'catalog.js', 'catalog.json', 'manifest.json', 'icon.svg', 'icon-maskable.svg', 'assets/app.js', 'assets/rail.js'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(

@@ -31,18 +31,22 @@
   header,.meta-row,main,.npbar{position:relative;z-index:1}
   a{color:inherit}
 
-  header{position:sticky;top:0;z-index:30;background:rgba(15,15,26,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--hairline)}
+  header{position:sticky;top:0;z-index:30;background:rgba(15,15,26,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--hairline);transition:background .25s,border-color .25s}
+  header.scrolled{background:rgba(15,15,26,.97);border-bottom-color:rgba(255,183,77,.22)}
   .hbar{max-width:1080px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   .logo{font-family:var(--font-display);font-size:1.3rem;font-weight:800;letter-spacing:-.5px;white-space:nowrap}
   #logoMark::before{content:'';display:inline-block;width:20px;height:20px;margin-right:8px;vertical-align:-3px;background:var(--primary);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'/%3E%3Cpath d='M10.3 21a1.94 1.94 0 0 0 3.4 0'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9'/%3E%3Cpath d='M10.3 21a1.94 1.94 0 0 0 3.4 0'/%3E%3C/svg%3E") center/contain no-repeat}
   .logo span{color:var(--primary)}
   .search{flex:1;min-width:160px;max-width:520px;position:relative}
   .search input{width:100%;background:var(--surface);border:1px solid var(--surface-2);color:var(--text);
-    padding:10px 14px 10px 38px;border-radius:10px;font-size:.92rem;outline:none}
-  .search input:focus{border-color:var(--primary)}
+    padding:10px 40px 10px 38px;border-radius:10px;font-size:.92rem;outline:none;caret-color:var(--primary);transition:border-color .15s,box-shadow .15s}
+  .search input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(255,183,77,.12)}
+  .kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-family:var(--font-mono);font-size:.62rem;
+    border:1px solid var(--surface-3);border-radius:4px;padding:2px 7px;color:var(--muted);pointer-events:none;opacity:.7}
   .search::before{content:'';width:15px;height:15px;background:var(--muted);position:absolute;left:14px;top:50%;transform:translateY(-50%);opacity:.6;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") center/contain no-repeat}
-  .btn-own{background:var(--primary);color:var(--on-primary);border:none;padding:10px 16px;border-radius:10px;
+  .btn-own{display:inline-flex;align-items:center;gap:7px;background:var(--primary);color:var(--on-primary);border:none;padding:10px 16px;border-radius:10px;
     font-weight:700;font-size:.85rem;cursor:pointer;white-space:nowrap}
+  .btn-own svg{flex-shrink:0}
   .btn-own:hover{background:var(--primary-d)}
 
   .tabs{max-width:1080px;margin:0 auto;padding:12px 20px 0;display:flex;gap:2px;flex-wrap:wrap}
@@ -60,13 +64,20 @@
     cursor:pointer;font-size:.78rem;transition:color .15s,border-color .15s}
   .chip:hover{color:var(--text);border-color:var(--surface-3)}
   .chip.on{background:var(--surface-3);color:var(--primary);border-color:var(--primary)}
+  .chip b{font-family:var(--font-mono);font-size:.58rem;font-weight:500;margin-left:6px;opacity:.55;
+    font-variant-numeric:tabular-nums;vertical-align:1px}
+  .chip.on b{opacity:.85}
+  /* sticky tag rail — stays under the header while results scroll */
+  .tagbar{position:sticky;top:118px;z-index:25;background:linear-gradient(rgba(15,15,26,.96),rgba(15,15,26,.92));
+    backdrop-filter:blur(8px);padding-bottom:10px}
   select.sort{background:var(--surface);border:1px solid var(--surface-2);color:var(--text);padding:6px 10px;border-radius:8px;font-size:.8rem}
 
   .tagbar{max-width:1080px;margin:0 auto;padding:6px 20px 0;display:flex;gap:6px;flex-wrap:wrap}
   .tagbar .chip{font-size:.74rem}
 
-  .meta-row{max-width:1080px;margin:0 auto;padding:12px 20px 4px;color:var(--muted);font-size:.72rem;font-family:var(--font-mono);
-    letter-spacing:.8px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+  .meta-row{max-width:1080px;margin:0 auto;padding:12px 20px 4px;color:var(--muted);font-size:.68rem;font-family:var(--font-mono);
+    letter-spacing:1.4px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+  #srcnote{color:rgba(255,183,77,.65)}
 
   main{max-width:1080px;margin:0 auto;padding:8px 20px 40px}
   /* staggered entrance — inline style custom props set by app.js */
@@ -76,10 +87,14 @@
   @media (prefers-reduced-motion: reduce){.scard{animation:none;opacity:1;transform:none}}
   /* safety: if animations never ran (occluded/print), force cards visible */
   html.booted .scard{animation:none;opacity:1;transform:none}  .list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
-  .scard{background:var(--surface);border:1px solid var(--surface-2);border-radius:10px;padding:14px;display:flex;
+  .scard{position:relative;background:var(--surface);border:1px solid var(--surface-2);border-radius:10px;padding:14px;display:flex;
     align-items:center;gap:12px;transition:border-color .15s,transform .18s var(--ease-out)}
+  .scard::before{content:attr(data-ix);position:absolute;top:6px;right:9px;font-family:var(--font-mono);font-size:.56rem;
+    letter-spacing:1px;color:rgba(255,255,255,.16);font-variant-numeric:tabular-nums}
   .scard:hover{border-color:var(--surface-3);transform:translateY(-2px)}
+  .scard:hover::before{color:rgba(255,183,77,.5)}
   .scard.playing{border-color:var(--primary);background:#221c10}
+  .scard.playing::before{color:var(--primary)}
   .play{width:44px;height:44px;border-radius:50%;background:var(--surface-2);color:var(--primary);border:none;cursor:pointer;
     font-size:1rem;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:background .15s}
   .scard.playing .play{background:var(--primary);color:var(--on-primary)}
@@ -170,6 +185,7 @@
     .controls{gap:12px}
     main{padding:8px 14px 40px}
     .list{grid-template-columns:1fr}
+    .tagbar{position:static;background:none;backdrop-filter:none;padding-bottom:0}
   }
 
   /* focus visibility — keyboard users get a ring, mouse users don't */
@@ -224,10 +240,10 @@
 <header>
   <div class="hbar">
     <div class="logo" id="logoMark">Ring<span>Vault</span></div>
-    <div class="search"><input id="search" type="text" placeholder="Αναζήτηση ήχου..."></div>
+    <div class="search"><input id="search" type="text" placeholder="Αναζήτηση ήχου..." autocomplete="off"><span class="kbd" aria-hidden="true">/</span></div>
     <button class="btn-own" id="installBtn" style="display:none;background:var(--surface-2);color:var(--primary)">Εγκατάσταση</button>
-    <button class="btn-own" id="openAI" style="background:linear-gradient(135deg,#ce93d8,#ffb74d);color:#1b1b2f"> AI ήχος</button>
-    <button class="btn-own" id="openOwn">Δικό σου ringtone</button>
+    <button class="btn-own" id="openAI" style="background:linear-gradient(135deg,#ce93d8,#ffb74d);color:#1b1b2f"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg>AI ήχος</button>
+    <button class="btn-own" id="openOwn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/></svg>Δικό σου ringtone</button>
   </div>
   <div class="tabs" id="tabs"></div>
   <div class="controls">
@@ -325,7 +341,7 @@
 
 <!-- catalog loaded as a JS var for file:// support; falls back to fetch -->
 <script defer src="catalog.js"></script>
-<script defer src="assets/app.js?v=4"></script>
+<script defer src="assets/app.js?v=6"></script>
 <script defer src="assets/rail.js?v=4"></script>
 
 
