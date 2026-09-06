@@ -993,7 +993,124 @@ section.block { padding: 130px 0; position: relative; }
 }
 .install-step h4 { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
 .install-step p { color: var(--muted); font-size: 0.88rem; line-height: 1.65; max-width: 250px; }
-.install-cta { margin-top: 52px; }
+/* ── Install CTA — the vault button (monolithic centerpiece) ── */
+.install-cta {
+  position: relative;
+  margin-top: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+/* breathing halo behind the button */
+.install-cta::before {
+  content: '';
+  position: absolute;
+  top: 37%; left: 50%;
+  width: 480px; height: 150px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, rgba(var(--primary-rgb), 0.16), transparent 72%);
+  animation: vault-breathe 3.6s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes vault-breathe {
+  0%, 100% { opacity: 0.55; transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 1;    transform: translate(-50%, -50%) scale(1.14); }
+}
+/* beam wrapper — an orbiting light runs around the border */
+.btn-vault {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 14px;
+  text-decoration: none;
+  background: conic-gradient(from var(--beam, 0deg),
+    transparent 0deg, transparent 295deg,
+    rgba(255, 255, 255, 0.95) 325deg,
+    var(--primary-light) 342deg,
+    transparent 360deg);
+  animation: vault-beam 4.5s linear infinite;
+}
+@property --beam {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes vault-beam { to { --beam: 360deg; } }
+/* the face — big amber slab with beveled, machined depth */
+.bv-face {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 25px 62px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, var(--primary-light) 0%, var(--primary) 46%, var(--primary-d) 100%);
+  color: var(--on-primary);
+  font-family: var(--font-display);
+  font-size: 1.32rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.18),
+    0 6px 20px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(var(--primary-rgb), 0.5),
+    0 0 44px rgba(var(--primary-rgb), 0.22);
+  transition: box-shadow 0.25s var(--ease-out), filter 0.25s var(--ease-out), transform 0.2s var(--ease-out);
+}
+.bv-face svg { flex-shrink: 0; transition: transform 0.35s var(--ease-out); }
+.btn-vault:hover .bv-face {
+  filter: brightness(1.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.18),
+    0 10px 30px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(var(--primary-rgb), 0.8),
+    0 0 66px rgba(var(--primary-rgb), 0.42);
+}
+.btn-vault:hover .bv-face svg { transform: translateY(3px); }
+.btn-vault:active .bv-face { transform: scale(0.97); }
+/* sheen sweep on hover — clipped inside the face */
+.bv-face::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  left: -80%;
+  width: 55%;
+  background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+  transform: skewX(-18deg);
+  transition: left 0.6s var(--ease-out);
+}
+.btn-vault:hover .bv-face::after { left: 130%; }
+/* mono metadata line flanked by hairlines */
+.install-note {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0;
+}
+.install-note::before, .install-note::after {
+  content: '';
+  width: 44px; height: 1px;
+  background: var(--hairline-strong);
+}
+@media (max-width: 560px) {
+  .bv-face { padding: 20px 38px; font-size: 1.1rem; }
+  .install-cta::before { width: 320px; height: 120px; }
+}
 
 /* ── What's new — stroke icons, no emoji ────────────────── */
 .new-features {

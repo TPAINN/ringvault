@@ -435,7 +435,7 @@
   /* ── Magnetic buttons (quickTo — no CSS transform transition) ── */
   function initMagnet() {
     if (!hasGsap || reduced || !finePointer) return;
-    document.querySelectorAll('.btn-primary, .btn-ghost, .nav-cta').forEach(function (btn) {
+    document.querySelectorAll('.btn-primary, .btn-ghost, .nav-cta, .btn-vault').forEach(function (btn) {
       var xTo = window.gsap.quickTo(btn, 'x', { duration: 0.35, ease: 'power3.out' });
       var yTo = window.gsap.quickTo(btn, 'y', { duration: 0.35, ease: 'power3.out' });
       btn.addEventListener('mousemove', function (e) {
