@@ -1,26 +1,19 @@
+# render.yaml: the API on Render's FREE plan. Nothing here costs money.
+#
+# The weekly catalog ingest does NOT run on Render (Render has no free plan for
+# cron jobs); it runs on GitHub Actions, free because this repository is public:
+# .github/workflows/weekly-ingest.yml. Do not add a `type: cron` service here,
+# and keep `plan: free` (a service without a plan defaults to a paid one).
+
 services:
   - type: web
     name: ringvault-api
     runtime: node
+    plan: free
     rootDir: backend
     buildCommand: npm install
     startCommand: node server.js
     healthCheckPath: /health
-    envVars:
-      - key: MONGO_URI
-        sync: false
-      - key: FREESOUND_API_KEY
-        sync: false
-      - key: PIXABAY_API_KEY
-        sync: false
-
-  - type: cron
-    name: ringvault-weekly-ingest
-    runtime: node
-    rootDir: backend
-    schedule: "0 4 * * 0"
-    buildCommand: npm install
-    startCommand: node cron/weekly.js
     envVars:
       - key: MONGO_URI
         sync: false
