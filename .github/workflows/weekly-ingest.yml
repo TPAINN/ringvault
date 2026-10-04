@@ -10,6 +10,11 @@ concurrency:
   group: weekly-ingest
   cancel-in-progress: false
 
+# actions: write lets the last step re-enable this schedule (see below).
+permissions:
+  actions: write
+  contents: read
+
 jobs:
   ingest:
     runs-on: ubuntu-latest
@@ -40,3 +45,12 @@ jobs:
         run: node pipeline/healthcheck.js
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
+
+      # GitHub disables scheduled workflows in a public repository after 60 days
+      # without a commit. Re-enabling it on every run resets that clock, so the
+      # schedule keeps running for as long as the repository exists.
+      - name: Keep this schedule alive
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/weekly-ingest.yml/enable"
