@@ -1,26 +1,31 @@
-# RingVault
+<div align="center">
 
-> Free ringtones, notifications & alarms for Android. No ads, no subscriptions.
+<img src="docs/banner.svg" alt="RingVault — free ringtones, notifications and alarms for Android. CC0. No ads." width="100%">
 
-[![Live](https://img.shields.io/badge/live-ringvault.vercel.app-f59e0b?style=flat-square)](https://ringvault.vercel.app/)
-[![API](https://img.shields.io/badge/API-onrender.com-46b3e6?style=flat-square)](https://ringvault-api-0wbw.onrender.com/health)
-[![APK](https://img.shields.io/github/v/release/TPAINN/ringvault?label=APK&style=flat-square)](https://github.com/TPAINN/ringvault/releases)
-[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+<br>
+
+[![Live](https://img.shields.io/badge/%E2%96%B6_live-ringvault.vercel.app-fbbf24?style=for-the-badge&labelColor=161006)](https://ringvault.vercel.app/)
+[![Download APK](https://img.shields.io/github/v/release/TPAINN/ringvault?label=Download%20APK&style=for-the-badge&labelColor=161006&color=38bdf8&logo=android&logoColor=white)](https://github.com/TPAINN/ringvault/releases/latest)
+[![API](https://img.shields.io/badge/API-online-161006?style=flat-square&labelColor=161006&color=fbbf24)](https://ringvault-api-0wbw.onrender.com/health)
+![License](https://img.shields.io/badge/license-MIT-161006?style=flat-square&labelColor=161006&color=38bdf8)
+
+**Free ringtones, notifications and alarms for Android. Preview instantly, set with one tap. No ads, no login, no subscriptions.**
+
+</div>
+
+<br>
 
 ![RingVault screenshot](docs/screenshot.jpg)
 
----
+## Why RingVault
 
-Curated free ringtones, notification sounds & alarms for Android. Preview instantly, set with one tap. Every sound is CC0, public domain or CC-BY — legally free forever. Weekly automated pipeline keeps the library fresh.
-
-## Features
-
-- Browse & preview hundreds of curated sounds
-- Set directly as ringtone / notification / alarm via MediaStore
-- All sounds CC0 / CC-BY — no copyright issues
-- Weekly automated ingest (Freesound + Pixabay)
-- No ads, no login, no subscriptions
-
+| | |
+|---|---|
+| **Legally free, forever** | Every sound is CC0, public domain or CC-BY. |
+| **One-tap set** | Writes straight to ringtone / notification / alarm through MediaStore. |
+| **Always fresh** | A weekly automated pipeline ingests new sounds from Freesound and Pixabay. |
+| **Fast preview** | Tap to hear it instantly with ExoPlayer before you commit. |
+| **Zero friction** | No ads, no account, no paywall. |
 ## Stack
 
 | Layer | Tech |
