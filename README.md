@@ -1,31 +1,17 @@
-<div align="center">
+# RingVault
 
-<img src="docs/banner.svg" alt="RingVault — free ringtones, notifications and alarms for Android. CC0. No ads." width="100%">
+Free ringtones, notification sounds and alarms for Android. Preview a sound and set it with one tap. No ads, no login, no subscription. Every sound is CC0, public domain or CC-BY.
 
-<br>
+[Website](https://ringvault.vercel.app/) | [Download the APK](https://github.com/TPAINN/ringvault/releases/latest) | [API status](https://ringvault-api-0wbw.onrender.com/health)
 
-[![Live](https://img.shields.io/badge/%E2%96%B6_live-ringvault.vercel.app-fbbf24?style=for-the-badge&labelColor=161006)](https://ringvault.vercel.app/)
-[![Download APK](https://img.shields.io/github/v/release/TPAINN/ringvault?label=Download%20APK&style=for-the-badge&labelColor=161006&color=38bdf8&logo=android&logoColor=white)](https://github.com/TPAINN/ringvault/releases/latest)
-[![API](https://img.shields.io/badge/API-online-161006?style=flat-square&labelColor=161006&color=fbbf24)](https://ringvault-api-0wbw.onrender.com/health)
-![License](https://img.shields.io/badge/license-MIT-161006?style=flat-square&labelColor=161006&color=38bdf8)
+![RingVault](docs/screenshot.jpg)
 
-**Free ringtones, notifications and alarms for Android. Preview instantly, set with one tap. No ads, no login, no subscriptions.**
+## Features
 
-</div>
-
-<br>
-
-![RingVault screenshot](docs/screenshot.jpg)
-
-## Why RingVault
-
-| | |
-|---|---|
-| **Legally free, forever** | Every sound is CC0, public domain or CC-BY. |
-| **One-tap set** | Writes straight to ringtone / notification / alarm through MediaStore. |
-| **Always fresh** | A weekly automated pipeline ingests new sounds from Freesound and Pixabay. |
-| **Fast preview** | Tap to hear it instantly with ExoPlayer before you commit. |
-| **Zero friction** | No ads, no account, no paywall. |
+- Browse and preview sounds in the app (ExoPlayer)
+- Set a sound as ringtone, notification or alarm through MediaStore
+- Library licensed CC0, public domain or CC-BY
+- Weekly automated ingest from Freesound and Pixabay
 ## Stack
 
 | Layer | Tech |
