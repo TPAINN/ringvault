@@ -2,3 +2,17 @@ node_modules/
 .env
 *.log
 .DS_Store
+
+# secrets and credentials: never commit
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+service-account*.json
+*.kdbx
+.npmrc
